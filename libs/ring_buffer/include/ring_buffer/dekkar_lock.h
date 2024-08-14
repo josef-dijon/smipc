@@ -15,21 +15,49 @@ public:
     DekkarLock& operator=(DekkarLock&&) = delete;
 
     void lock() noexcept {
-        while (!try_lock()) {;}
+        flag1_.store(true);
+
+        while (flag2_.load()) {
+            if (flag1_.load()) {
+                flag1_.store(false);
+                while (turn_.load()) {;}
+                flag1_.store(true);
+            }
+        }
     }
 
     void unlock() noexcept {
+        turn_.store(true);
         flag1_.store(false);
     }
 
     bool try_lock() noexcept {
         flag1_.store(true);
-        return ! flag2_.load();
+        
+        if (flag2_.load()) {
+            flag1_.store(false);
+            return false;
+        }
+        
+        if (!flag1_.load()) {
+            flag1_.store(false);
+            return false;
+        }
+        
+        flag1_.store(false);
+
+        if (turn_.load()) {
+            return false;
+        }
+        
+        flag1_.store(true);
+        return true;
     }
 
 private:
     std::atomic_bool& flag1_;
     std::atomic_bool& flag2_;
+    std::atomic_bool& turn_;
 };
 
 #endif  // DEKKAR_LOCK_H_
