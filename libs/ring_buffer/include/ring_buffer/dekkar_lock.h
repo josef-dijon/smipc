@@ -5,8 +5,10 @@
 
 class DekkarLock {
 public:
-    DekkarLock(std::atomic_bool& flag1, std::atomic_bool& flag2)
-        : flag1_{flag1}, flag2_{flag2} {}
+    template <bool Swap>
+    DekkarLock(std::atomic_bool& flag1, std::atomic_bool& flag2, std::atomic_bool& turn) noexcept
+        : flag1_{flag1}, flag2_{flag2}, turn_{turn}, swap_{false};
+
     DekkarLock() = delete;
     ~DekkarLock() = default;
     DekkarLock(const DekkarLock&) = delete;
@@ -58,6 +60,16 @@ private:
     std::atomic_bool& flag1_;
     std::atomic_bool& flag2_;
     std::atomic_bool& turn_;
+    bool swap_ {false};
 };
+    
+template <>
+DekkarLock::DekkarLock<false>(std::atomic_bool& flag1, std::atomic_bool& flag2, std::atomic_bool& turn) noexcept
+    : flag1_{flag1}, flag2_{flag2}, turn_{turn}, swap_{false} {}
+
+template <>
+DekkarLock::DekkarLock<true>(std::atomic_bool& flag1, std::atomic_bool& flag2, std::atomic_bool& turn) noexcept
+    : flag1_{flag2}, flag2_{flag1}, turn_{turn}, swap_{true} {}
+    
 
 #endif  // DEKKAR_LOCK_H_
