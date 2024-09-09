@@ -14,6 +14,7 @@ target_include_directories(serdes INTERFACE src)
 set_property(TARGET serdes PROPERTY CXX_STANDARD 20)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_COLOR_DIAGNOSTICS ON)
 
 enable_testing()
 add_subdirectory(test)

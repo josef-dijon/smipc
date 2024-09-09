@@ -4,10 +4,11 @@
 #include "calculate_actual_size.h"
 #include "calculate_minimum_size.h"
 #include "check_dynamicism.h"
+#include "serialise.h"
 
 #include <variant>
 
-using Operation = std::variant<CalculateMinimumSize, CalculateActualSize, CheckDynamicism>;
+using Operation = std::variant<CalculateMinimumSize, CalculateActualSize, CheckDynamicism, Serialise>;
 
 class Operator
 {
