@@ -1,8 +1,9 @@
-#include "serdes.h"
+#include "serdes/serdes.h"
 
 #include <cstdint>
-#include <iostream>
+#include <gtest/gtest.h>
 #include <string>
+#include <vector>
 
 enum class MyEnum : uint16_t
 {
@@ -27,13 +28,18 @@ SERIALISABLE(MyStruct)
 	MEMBER(e);
 }
 
-int main()
+TEST(serdes, test)
 {
-	const SerialisableMyStruct x;
-	std::cout << "Min size   : " << x.getMinimumSize() << "\n";
-	std::cout << "Actual size: " << x.getActualSize() << "\n";
-	std::cout << "Dynamic    : " << x.isDynamic() << "\n";
-	std::cout << "Static     : " << x.isStatic() << "\n";
+	const SerialisableMyStruct x {};
 
-	return 0;
+	EXPECT_EQ(x.getMinimumSize(), 18);
+	EXPECT_EQ(x.getActualSize(), 41);
+	EXPECT_TRUE(x.isDynamic());
+	EXPECT_FALSE(x.isStatic());
+}
+
+int main(int argc, char** argv)
+{
+	testing::InitGoogleTest(&argc, argv);
+	return RUN_ALL_TESTS();
 }

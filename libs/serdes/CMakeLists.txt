@@ -6,10 +6,14 @@ cmake_minimum_required (VERSION 3.27)
 project ("serdes")
 
 # Add source to this project's executable.
-add_executable(serdes src/main.cpp)
+add_library(serdes INTERFACE)
 
-target_include_directories(serdes PRIVATE include)
+target_include_directories(serdes INTERFACE include)
+target_include_directories(serdes INTERFACE src)
 
 set_property(TARGET serdes PROPERTY CXX_STANDARD 20)
 
-# TODO: Add tests and install targets if needed.
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+enable_testing()
+add_subdirectory(test)
