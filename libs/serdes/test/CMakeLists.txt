@@ -24,6 +24,8 @@ target_link_libraries(benchmark-test PRIVATE benchmark::benchmark)
 set_property(TARGET unit-test PROPERTY CXX_STANDARD 20)
 set_property(TARGET benchmark-test PROPERTY CXX_STANDARD 20)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+
 add_test(UnitTests unit-test)
 add_test(Benchmarks benchmark-test)
 

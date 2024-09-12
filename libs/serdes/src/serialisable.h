@@ -12,6 +12,19 @@ template <class T>
 class Serialisable
 {
 public:
+	constexpr void serialiseInto(std::vector<std::byte>& data) const
+	{
+		processMembers(Operator(Serialise(data)));
+	}
+
+	constexpr auto serialise() const -> std::vector<std::byte>
+	{
+		std::vector<std::byte> data {};
+		data.reserve(getActualSize());
+		processMembers(Operator(Serialise(data)));
+		return data;
+	}
+
 	constexpr auto getMinimumSize() const -> std::size_t
 	{
 		std::size_t size {};

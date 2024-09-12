@@ -26,7 +26,8 @@ public:
 	template <Enum T>
 	constexpr void operator()(T& value)
 	{
-		operator()(static_cast<std::underlying_type_t<T>>(value));
+		const auto fundamentalValue {static_cast<std::underlying_type_t<T>>(value)};
+		operator()(fundamentalValue);
 	}
 
 	template <Vector T>

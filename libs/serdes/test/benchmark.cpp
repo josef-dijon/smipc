@@ -17,6 +17,9 @@ struct MyStruct
 	std::vector<uint8_t> d {1, 2, 3, 4};     // 4, 12
 	std::string          e {"hello world"};  // 4, 19
 											 // 18, 41
+											 //
+	std::vector<uint16_t>    f {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	std::vector<std::string> g {"fdsafda", "fdsafdsa", "rewqrew", "fdsjaklhfudsaihjkjhfdksajhkfd", "fjdskafhds7ahjkfjdsajk"};
 };
 
 SERIALISABLE(MyStruct)
@@ -26,6 +29,8 @@ SERIALISABLE(MyStruct)
 	MEMBER(c);
 	MEMBER(d);
 	MEMBER(e);
+	MEMBER(f);
+	MEMBER(g);
 }
 
 static void BM_GetMinimumSize(benchmark::State& state)
@@ -61,8 +66,35 @@ static void BM_CheckDynamicism(benchmark::State& state)
 	}
 }
 
+static void BM_Serialise(benchmark::State& state)
+{
+	const SerialisableMyStruct x {};
+
+	for (auto _ : state)
+	{
+		auto data = x.serialise();
+		benchmark::DoNotOptimize(data);
+	}
+}
+
+static void BM_SerialiseInto(benchmark::State& state)
+{
+	const SerialisableMyStruct x {};
+	std::vector<std::byte>     data {};
+	data.reserve(x.getActualSize());
+
+	for (auto _ : state)
+	{
+		x.serialiseInto(data);
+		benchmark::DoNotOptimize(data);
+		data.clear();
+	}
+}
+
 BENCHMARK(BM_GetMinimumSize);
 BENCHMARK(BM_GetActualSize);
 BENCHMARK(BM_CheckDynamicism);
+BENCHMARK(BM_Serialise);
+BENCHMARK(BM_SerialiseInto);
 
 BENCHMARK_MAIN();
