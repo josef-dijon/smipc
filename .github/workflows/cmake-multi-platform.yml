@@ -27,6 +27,7 @@ jobs:
           - os: ubuntu-latest
             c_compiler: clang
             cpp_compiler: clang++
+            build_type: Release
           - os: windows-latest
             c_compiler: cl
             cpp_compiler: cl
