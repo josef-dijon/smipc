@@ -35,6 +35,7 @@ public:
 	{
 		VariableInteger size {value.size()};
 		operator()(size);
+		std::foreach(std::cbegin(value), std::cend(value), [this](const auto& elem) { operator()(elem); });
 	}
 
 	template <String T>
@@ -42,6 +43,7 @@ public:
 	{
 		VariableInteger size {value.length()};
 		operator()(size);
+		std::foreach(std::cbegin(value), std::cend(value), [this](const auto& elem) { operator()(elem); });
 	}
 
 	template <std::same_as<VariableInteger> T>
