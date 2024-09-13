@@ -13,5 +13,4 @@ target_include_directories(serdes INTERFACE src)
 
 set_property(TARGET serdes PROPERTY CXX_STANDARD 20)
 
-enable_testing()
 add_subdirectory(test)
