@@ -1,9 +1,9 @@
-﻿# CMakeList.txt : CMake project for shared_memory_experiments, include source and define
-# project specific logic here.
+﻿# CMakeList.txt : CMake project for shared_memory_experiments, include source
+# and define project specific logic here.
 #
-cmake_minimum_required (VERSION 3.27)
+cmake_minimum_required(VERSION 3.27)
 
-project ("serdes")
+project("serdes")
 
 # Add source to this project's executable.
 add_library(serdes INTERFACE)
@@ -12,9 +12,6 @@ target_include_directories(serdes INTERFACE include)
 target_include_directories(serdes INTERFACE src)
 
 set_property(TARGET serdes PROPERTY CXX_STANDARD 20)
-
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_COLOR_DIAGNOSTICS ON)
 
 enable_testing()
 add_subdirectory(test)
