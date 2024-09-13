@@ -11,7 +11,8 @@ endif()
 
 project ("shared_memory_experiments")
 
-add_subdirectory("libs/smipc")
-add_subdirectory("libs/client_test")
-add_subdirectory("libs/server_test")
-add_subdirectory("libs/ring_buffer")
+# add_subdirectory("libs/smipc")
+# add_subdirectory("libs/client_test")
+# add_subdirectory("libs/server_test")
+# add_subdirectory("libs/ring_buffer")
+add_subdirectory("libs/serdes")
