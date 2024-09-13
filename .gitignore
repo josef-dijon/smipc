@@ -1,8 +1,5 @@
 build
 .vs
-.cache
-vcpkg_installed
-vcpkg-manifest-install.log
 
 # Prerequisites
 *.d
