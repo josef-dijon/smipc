@@ -1,12 +1,7 @@
 #ifndef SERIALISABLE_H_
 #define SERIALISABLE_H_
 
-#include "calculate_actual_size.h"
-#include "calculate_minimum_size.h"
-#include "check_dynamicism.h"
 #include "operator.h"
-
-#include <cstdint>
 
 template <class T>
 class Serialisable
@@ -23,6 +18,11 @@ public:
 		data.reserve(getActualSize());
 		processMembers(Operator(Serialise(data)));
 		return data;
+	}
+
+	constexpr void deserialise(const std::vector<std::byte>& data)
+	{
+		processMembers(Operator(Deserialise(data)));
 	}
 
 	constexpr auto getMinimumSize() const -> std::size_t
