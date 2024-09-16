@@ -11,6 +11,6 @@ add_library(serdes INTERFACE)
 target_include_directories(serdes INTERFACE include)
 target_include_directories(serdes INTERFACE src)
 
-set_property(TARGET serdes PROPERTY CXX_STANDARD 20)
+set_property(TARGET serdes PROPERTY CXX_STANDARD 23)
 
 add_subdirectory(test)

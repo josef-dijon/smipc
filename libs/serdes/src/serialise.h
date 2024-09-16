@@ -48,10 +48,10 @@ public:
 			{ operator()(elem); });
 	}
 
-	template <std::same_as<VariableInteger> T>
+	template <VarInt T>
 	constexpr void operator()(T& value)
 	{
-		std::copy_n(value.bytes(), value.size(), std::back_inserter(m_data));
+		std::copy_n(std::begin(value.bytes()), value.size(), std::back_inserter(m_data));
 	}
 
 private:

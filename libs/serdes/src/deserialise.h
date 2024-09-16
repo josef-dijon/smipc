@@ -51,10 +51,11 @@ public:
 			{ operator()(elem); });
 	}
 
-	template <std::same_as<VariableInteger> T>
+	template <VarInt T>
 	constexpr void operator()(T& value)
 	{
 		value = VariableInteger(m_data.data() + m_pointer);
+		m_pointer += value.size();
 	}
 
 private:

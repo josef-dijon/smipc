@@ -1,7 +1,10 @@
 #include "serdes/serdes.h"
 
 #include <cstdint>
+#include <cstring>
+#include <format>
 #include <gtest/gtest.h>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -33,6 +36,72 @@ SERIALISABLE(MyStruct)
 	MEMBER(e);
 }
 
+TEST(serdes, variable_integer_0)
+{
+	const VariableInteger varInt {std::size_t(0u)};
+	const VariableInteger varInt2 {varInt.bytes().data()};
+
+	EXPECT_EQ(varInt.value(), varInt2.value());
+	EXPECT_EQ(varInt.size(), 1u);
+	EXPECT_EQ(varInt2.size(), 1u);
+	EXPECT_EQ(varInt.bytes(), varInt2.bytes());
+}
+
+TEST(serdes, variable_integer_1)
+{
+	const VariableInteger varInt {0x01};
+	const VariableInteger varInt2 {varInt.bytes().data()};
+
+	EXPECT_EQ(varInt.value(), varInt2.value());
+	EXPECT_EQ(varInt.size(), 1u);
+	EXPECT_EQ(varInt2.size(), 1u);
+	EXPECT_EQ(varInt.bytes(), varInt2.bytes());
+}
+
+TEST(serdes, variable_integer_7F)
+{
+	const VariableInteger varInt {0x7F};
+	const VariableInteger varInt2 {varInt.bytes().data()};
+
+	EXPECT_EQ(varInt.value(), varInt2.value());
+	EXPECT_EQ(varInt.size(), 1u);
+	EXPECT_EQ(varInt2.size(), 1u);
+	EXPECT_EQ(varInt.bytes(), varInt2.bytes());
+}
+
+TEST(serdes, variable_integer_F0)
+{
+	const VariableInteger varInt {0xF0};
+	const VariableInteger varInt2 {varInt.bytes().data()};
+
+	EXPECT_EQ(varInt.value(), varInt2.value());
+	EXPECT_EQ(varInt.size(), 2u);
+	EXPECT_EQ(varInt2.size(), 2u);
+	EXPECT_EQ(varInt.bytes(), varInt2.bytes());
+}
+
+TEST(serdes, variable_integer_F1)
+{
+	const VariableInteger varInt {0xF1};
+	const VariableInteger varInt2 {varInt.bytes().data()};
+
+	EXPECT_EQ(varInt.value(), varInt2.value());
+	EXPECT_EQ(varInt.size(), 2u);
+	EXPECT_EQ(varInt2.size(), 2u);
+	EXPECT_EQ(varInt.bytes(), varInt2.bytes());
+}
+
+TEST(serdes, variable_integer_FFFFFFFFFFFFFFFF)
+{
+	const VariableInteger varInt {0xFFFF'FFFF'FFFF'FFFF};
+	const VariableInteger varInt2 {varInt.bytes().data()};
+
+	EXPECT_EQ(varInt.value(), varInt2.value());
+	EXPECT_EQ(varInt.size(), 9u);
+	EXPECT_EQ(varInt2.size(), 9u);
+	EXPECT_EQ(varInt.bytes(), varInt2.bytes());
+}
+
 TEST(serdes, test)
 {
 	const SerialisableMyStruct x {};
@@ -47,22 +116,22 @@ TEST(serdes, serialise)
 {
 	const SerialisableMyStruct   x {};
 	const std::vector<std::byte> expectedBytes {
-		std::byte(0),
-		std::byte(0),
-		std::byte(0),
-		std::byte(0),
-		std::byte(0),
-		std::byte(0),
-		std::byte(0),
-		std::byte(0),
-		std::byte(0),
-		std::byte(0),
-		std::byte(4),
-		std::byte(1),
-		std::byte(2),
-		std::byte(3),
-		std::byte(4),
-		std::byte(11),
+		std::byte(0u),
+		std::byte(0u),
+		std::byte(0u),
+		std::byte(0u),
+		std::byte(0u),
+		std::byte(0u),
+		std::byte(0u),
+		std::byte(0u),
+		std::byte(0u),
+		std::byte(0u),
+		std::byte(4u),
+		std::byte(1u),
+		std::byte(2u),
+		std::byte(3u),
+		std::byte(4u),
+		std::byte(11u),
 		std::byte('h'),
 		std::byte('e'),
 		std::byte('l'),
@@ -82,22 +151,22 @@ TEST(serdes, serialise)
 TEST(serdes, deserialise)
 {
 	const std::vector<std::byte> bytes {
-		std::byte(0),
-		std::byte(0),
-		std::byte(0),
-		std::byte(0),
-		std::byte(0),
-		std::byte(0),
-		std::byte(0),
-		std::byte(0),
-		std::byte(0),
-		std::byte(0),
-		std::byte(4),
-		std::byte(1),
-		std::byte(2),
-		std::byte(3),
-		std::byte(4),
-		std::byte(11),
+		std::byte(0u),
+		std::byte(0u),
+		std::byte(0u),
+		std::byte(0u),
+		std::byte(0u),
+		std::byte(0u),
+		std::byte(0u),
+		std::byte(0u),
+		std::byte(0u),
+		std::byte(0u),
+		std::byte(4u),
+		std::byte(1u),
+		std::byte(2u),
+		std::byte(3u),
+		std::byte(4u),
+		std::byte(11u),
 		std::byte('h'),
 		std::byte('e'),
 		std::byte('l'),

@@ -13,6 +13,6 @@ add_library(
 
 target_include_directories(smipc PRIVATE include)
 
-set_property(TARGET smipc PROPERTY CXX_STANDARD 20)
+set_property(TARGET smipc PROPERTY CXX_STANDARD 23)
 
 # TODO: Add tests and install targets if needed.
