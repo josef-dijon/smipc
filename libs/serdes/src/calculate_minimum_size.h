@@ -28,14 +28,14 @@ public:
 	template <Vector T>
 	constexpr void operator()(T& value)
 	{
-		constexpr VariableInteger varInt {0u};
+		constexpr VariableInteger varInt {std::size_t {0u}};
 		m_size += varInt.size();
 	}
 
 	template <String T>
 	constexpr void operator()(T& value)
 	{
-		constexpr VariableInteger varInt {0u};
+		constexpr VariableInteger varInt {std::size_t {0u}};
 		m_size += varInt.size();
 	}
 

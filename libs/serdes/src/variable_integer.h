@@ -3,9 +3,9 @@
 
 #include <algorithm>
 #include <array>
-#include <concepts>
 #include <cstddef>
 #include <cstdint>
+#include <vector>
 
 static constexpr bool IsTopBitSet(std::byte b)
 {
@@ -15,12 +15,12 @@ static constexpr bool IsTopBitSet(std::byte b)
 class VariableInteger
 {
 public:
-	template <std::unsigned_integral T>
-	explicit constexpr VariableInteger(T value)
-		: m_count {9u + 1u}
+	constexpr VariableInteger(uint64_t value)
+		: m_value {value}
+		, m_count {9u + 1u}
 	{
-		for_each(std::begin(m_bytes), std::end(m_bytes), [value, i = 0](std::byte& b) mutable
-			{ b = static_cast<std::byte>(static_cast<uint64_t>(value) >> i * 7u) & std::byte(0x7F); });
+		for_each(std::begin(m_bytes), std::end(m_bytes), [this, i = 0](std::byte& b) mutable
+			{ b = static_cast<std::byte>(m_value >> i * 7u) & std::byte(0x7F); });
 
 		for_each(std::crbegin(m_bytes), std::crend(m_bytes), [this](std::byte b)
 			{ m_count -= std::size_t(! IsTopBitSet(b)); });
@@ -28,16 +28,17 @@ public:
 
 	explicit constexpr VariableInteger(const std::byte* bytes)
 	{
-		for (std::size_t i {0u}; i < m_bytes.size(); ++i)
+		for (std::size_t i = 0u; i < m_bytes.size(); ++i)
 		{
-			// TODO: This needs fixing, we need to shift by 7
+			m_value |= static_cast<uint64_t>(bytes[i] & std::byte(0x7F)) << i * 7u;
 			m_bytes[i] = bytes[i];
-			++m_count;
 
 			if (! IsTopBitSet(bytes[i]))
 			{
 				break;
 			}
+
+			++m_count;
 		}
 	}
 
@@ -46,14 +47,28 @@ public:
 		return m_count;
 	}
 
-	const std::byte* bytes() const
+	const std::byte* data() const
 	{
 		return reinterpret_cast<const std::byte*>(m_bytes.data());
 	}
 
+	std::byte* data()
+	{
+		return reinterpret_cast<std::byte*>(m_bytes.data());
+	}
+
+	uint64_t value() const
+	{
+		return m_value;
+	}
+
 private:
-	std::array<std::byte, 9u> m_bytes {{}};
-	std::size_t               m_count {0u};
+	uint64_t                  m_value {0u};
+	std::array<std::byte, 9u> m_bytes {{{}, {}, {}, {}, {}, {}, {}, {}, {}}};
+	std::size_t               m_count {1u};
 };
+
+template <class T>
+concept VarInt = std::is_same_v<T, VariableInteger>;
 
 #endif  // VARIABLE_INTEGER_H_

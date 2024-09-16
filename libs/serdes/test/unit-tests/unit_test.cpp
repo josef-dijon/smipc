@@ -1,6 +1,7 @@
 #include "serdes/serdes.h"
 
 #include <cstdint>
+#include <cstring>
 #include <gtest/gtest.h>
 #include <string>
 #include <vector>
@@ -31,6 +32,78 @@ SERIALISABLE(MyStruct)
 	MEMBER(c);
 	MEMBER(d);
 	MEMBER(e);
+}
+
+TEST(serdes, variable_integer_0)
+{
+	const VariableInteger varInt {std::size_t(0u)};
+	const auto            data {varInt.data()};
+	const VariableInteger varInt2 {data};
+
+	EXPECT_EQ(varInt.value(), varInt2.value());
+	EXPECT_EQ(varInt.size(), 1u);
+	EXPECT_EQ(varInt2.size(), 1u);
+	EXPECT_EQ(std::memcmp(varInt.data(), varInt2.data(), 9u), 0);
+}
+
+TEST(serdes, variable_integer_1)
+{
+	const VariableInteger varInt {0x01};
+	const auto            data {varInt.data()};
+	const VariableInteger varInt2 {data};
+
+	EXPECT_EQ(varInt.value(), varInt2.value());
+	EXPECT_EQ(varInt.size(), 1u);
+	EXPECT_EQ(varInt2.size(), 1u);
+	EXPECT_EQ(std::memcmp(varInt.data(), varInt2.data(), 9u), 0);
+}
+
+TEST(serdes, variable_integer_7F)
+{
+	const VariableInteger varInt {0x7F};
+	const auto            data {varInt.data()};
+	const VariableInteger varInt2 {data};
+
+	EXPECT_EQ(varInt.value(), varInt2.value());
+	EXPECT_EQ(varInt.size(), 1u);
+	EXPECT_EQ(varInt2.size(), 1u);
+	EXPECT_EQ(std::memcmp(varInt.data(), varInt2.data(), 9u), 0);
+}
+
+TEST(serdes, variable_integer_F0)
+{
+	const VariableInteger varInt {0xF0};
+	const auto            data {varInt.data()};
+	const VariableInteger varInt2 {data};
+
+	EXPECT_EQ(varInt.value(), varInt2.value());
+	EXPECT_EQ(varInt.size(), 2u);
+	EXPECT_EQ(varInt2.size(), 2u);
+	EXPECT_EQ(std::memcmp(varInt.data(), varInt2.data(), 9u), 0);
+}
+
+TEST(serdes, variable_integer_F1)
+{
+	const VariableInteger varInt {0xF0};
+	const auto            data {varInt.data()};
+	const VariableInteger varInt2 {data};
+
+	EXPECT_EQ(varInt.value(), varInt2.value());
+	EXPECT_EQ(varInt.size(), 2u);
+	EXPECT_EQ(varInt2.size(), 2u);
+	EXPECT_EQ(std::memcmp(varInt.data(), varInt2.data(), 9u), 0);
+}
+
+TEST(serdes, variable_integer_FFFFFFFFFFFFFFFF)
+{
+	const VariableInteger varInt {0xFFFFFFFFFFFFFFFF};
+	const auto            data {varInt.data()};
+	const VariableInteger varInt2 {data};
+
+	EXPECT_EQ(varInt.value(), varInt2.value());
+	EXPECT_EQ(varInt.size(), 9u);
+	EXPECT_EQ(varInt2.size(), 9u);
+	EXPECT_EQ(std::memcmp(varInt.data(), varInt2.data(), 9u), 0);
 }
 
 TEST(serdes, test)
