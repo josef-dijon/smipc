@@ -72,7 +72,7 @@ static void BM_Serialise(benchmark::State& state)
 
 	for (auto _ : state)
 	{
-		auto data = x.serialise();
+		auto data {x.serialise()};
 		benchmark::DoNotOptimize(data);
 	}
 }
@@ -91,10 +91,24 @@ static void BM_SerialiseInto(benchmark::State& state)
 	}
 }
 
+static void BM_Deserialise(benchmark::State& state)
+{
+	const SerialisableMyStruct x {};
+	const auto                 data {x.serialise()};
+
+	for (auto _ : state)
+	{
+		SerialisableMyStruct s {};
+		s.deserialise(data);
+		benchmark::DoNotOptimize(s);
+	}
+}
+
 BENCHMARK(BM_GetMinimumSize);
 BENCHMARK(BM_GetActualSize);
 BENCHMARK(BM_CheckDynamicism);
 BENCHMARK(BM_Serialise);
 BENCHMARK(BM_SerialiseInto);
+BENCHMARK(BM_Deserialise);
 
 BENCHMARK_MAIN();
