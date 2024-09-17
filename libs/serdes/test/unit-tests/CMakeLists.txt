@@ -12,4 +12,4 @@ target_link_libraries(serdes-unit-tests PRIVATE GTest::gtest)
 
 set_property(TARGET serdes-unit-tests PROPERTY CXX_STANDARD 23)
 
-add_test(UnitTests serdes-unit-tests)
+add_test(NAME serdes-unit-tests COMMAND serdes-unit-tests --gtest_color=1)

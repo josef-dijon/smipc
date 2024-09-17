@@ -12,4 +12,4 @@ target_link_libraries(serdes-benchmarks PRIVATE benchmark::benchmark)
 
 set_property(TARGET serdes-benchmarks PROPERTY CXX_STANDARD 23)
 
-add_test(Benchmarks serdes-benchmarks)
+add_test(NAME serdes-benchmarks COMMAND serdes-benchmarks)
