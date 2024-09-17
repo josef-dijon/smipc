@@ -13,6 +13,23 @@ static constexpr bool IsContinuationBitSet(std::byte b)
 	return (b & std::byte(0x80)) != std::byte(0u);
 }
 
+static constexpr uint64_t ByteSwap(uint64_t value)
+{
+	const auto                bytes = std::bit_cast<std::array<std::byte, 8u>>(value);
+	std::array<std::byte, 8u> swappedBytes {};
+
+	swappedBytes[0u] = bytes[7u];
+	swappedBytes[1u] = bytes[6u];
+	swappedBytes[2u] = bytes[5u];
+	swappedBytes[3u] = bytes[4u];
+	swappedBytes[4u] = bytes[3u];
+	swappedBytes[5u] = bytes[2u];
+	swappedBytes[6u] = bytes[1u];
+	swappedBytes[7u] = bytes[0u];
+
+	return std::bit_cast<uint64_t>(swappedBytes);
+}
+
 class VariableInteger
 {
 public:
@@ -23,7 +40,7 @@ public:
 	{
 		if constexpr (std::endian::native == std::endian::big)
 		{
-			value = std::byteswap(value);
+			value = ByteSwap(value);
 		}
 
 		// Loop over the first 8 bytes
@@ -72,7 +89,7 @@ public:
 
 		if constexpr (std::endian::native == std::endian::big)
 		{
-			m_value = std::byteswap(m_value);
+			m_value = ByteSwap(m_value);
 		}
 	}
 
