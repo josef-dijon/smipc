@@ -80,14 +80,12 @@ static void BM_Serialise(benchmark::State& state)
 static void BM_SerialiseInto(benchmark::State& state)
 {
 	const SerialisableMyStruct x {};
-	std::vector<std::byte>     data {};
-	data.reserve(x.getActualSize());
+	std::vector<std::byte>     data(x.getActualSize());
 
 	for (auto _ : state)
 	{
 		x.serialiseInto(data);
 		benchmark::DoNotOptimize(data);
-		data.clear();
 	}
 }
 

@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <cstring>
 #include <gtest/gtest.h>
+#include <span>
 #include <string>
 #include <vector>
 
@@ -42,7 +43,10 @@ TEST(serdes, variable_integer_0)
 	EXPECT_EQ(varInt.value(), varInt2.value());
 	EXPECT_EQ(varInt.size(), 1u);
 	EXPECT_EQ(varInt2.size(), 1u);
-	EXPECT_EQ(varInt.bytes(), varInt2.bytes());
+	EXPECT_EQ(varInt.bytes().size(), varInt.size());
+	EXPECT_EQ(varInt2.bytes().size(), varInt2.size());
+	ASSERT_EQ(varInt.bytes().size(), varInt2.bytes().size());
+	EXPECT_EQ(std::memcmp(varInt.bytes().data(), varInt2.bytes().data(), varInt.bytes().size()), 0u);
 }
 
 TEST(serdes, variable_integer_1)
@@ -53,7 +57,10 @@ TEST(serdes, variable_integer_1)
 	EXPECT_EQ(varInt.value(), varInt2.value());
 	EXPECT_EQ(varInt.size(), 1u);
 	EXPECT_EQ(varInt2.size(), 1u);
-	EXPECT_EQ(varInt.bytes(), varInt2.bytes());
+	EXPECT_EQ(varInt.bytes().size(), varInt.size());
+	EXPECT_EQ(varInt2.bytes().size(), varInt2.size());
+	ASSERT_EQ(varInt.bytes().size(), varInt2.bytes().size());
+	EXPECT_EQ(std::memcmp(varInt.bytes().data(), varInt2.bytes().data(), varInt.bytes().size()), 0u);
 }
 
 TEST(serdes, variable_integer_7F)
@@ -64,7 +71,10 @@ TEST(serdes, variable_integer_7F)
 	EXPECT_EQ(varInt.value(), varInt2.value());
 	EXPECT_EQ(varInt.size(), 1u);
 	EXPECT_EQ(varInt2.size(), 1u);
-	EXPECT_EQ(varInt.bytes(), varInt2.bytes());
+	EXPECT_EQ(varInt.bytes().size(), varInt.size());
+	EXPECT_EQ(varInt2.bytes().size(), varInt2.size());
+	ASSERT_EQ(varInt.bytes().size(), varInt2.bytes().size());
+	EXPECT_EQ(std::memcmp(varInt.bytes().data(), varInt2.bytes().data(), varInt.bytes().size()), 0u);
 }
 
 TEST(serdes, variable_integer_F0)
@@ -75,7 +85,10 @@ TEST(serdes, variable_integer_F0)
 	EXPECT_EQ(varInt.value(), varInt2.value());
 	EXPECT_EQ(varInt.size(), 2u);
 	EXPECT_EQ(varInt2.size(), 2u);
-	EXPECT_EQ(varInt.bytes(), varInt2.bytes());
+	EXPECT_EQ(varInt.bytes().size(), varInt.size());
+	EXPECT_EQ(varInt2.bytes().size(), varInt2.size());
+	ASSERT_EQ(varInt.bytes().size(), varInt2.bytes().size());
+	EXPECT_EQ(std::memcmp(varInt.bytes().data(), varInt2.bytes().data(), varInt.bytes().size()), 0u);
 }
 
 TEST(serdes, variable_integer_F1)
@@ -86,7 +99,10 @@ TEST(serdes, variable_integer_F1)
 	EXPECT_EQ(varInt.value(), varInt2.value());
 	EXPECT_EQ(varInt.size(), 2u);
 	EXPECT_EQ(varInt2.size(), 2u);
-	EXPECT_EQ(varInt.bytes(), varInt2.bytes());
+	EXPECT_EQ(varInt.bytes().size(), varInt.size());
+	EXPECT_EQ(varInt2.bytes().size(), varInt2.size());
+	ASSERT_EQ(varInt.bytes().size(), varInt2.bytes().size());
+	EXPECT_EQ(std::memcmp(varInt.bytes().data(), varInt2.bytes().data(), varInt.bytes().size()), 0u);
 }
 
 TEST(serdes, variable_integer_FFFFFFFFFFFFFFFF)
@@ -97,10 +113,13 @@ TEST(serdes, variable_integer_FFFFFFFFFFFFFFFF)
 	EXPECT_EQ(varInt.value(), varInt2.value());
 	EXPECT_EQ(varInt.size(), 9u);
 	EXPECT_EQ(varInt2.size(), 9u);
-	EXPECT_EQ(varInt.bytes(), varInt2.bytes());
+	EXPECT_EQ(varInt.bytes().size(), varInt.size());
+	EXPECT_EQ(varInt2.bytes().size(), varInt2.size());
+	ASSERT_EQ(varInt.bytes().size(), varInt2.bytes().size());
+	EXPECT_EQ(std::memcmp(varInt.bytes().data(), varInt2.bytes().data(), varInt.bytes().size()), 0u);
 }
 
-TEST(serdes, test)
+TEST(serdes, size)
 {
 	const SerialisableMyStruct x {};
 
@@ -141,7 +160,7 @@ TEST(serdes, serialise)
 		std::byte('r'),
 		std::byte('l'),
 		std::byte('d')};
-	const auto bytes {x.serialise()};
+	const std::vector<std::byte> bytes {x.serialise()};
 
 	EXPECT_EQ(bytes, expectedBytes);
 }
