@@ -6,21 +6,26 @@
 
 #include <algorithm>
 #include <cstddef>
-#include <iterator>
+#include <span>
 #include <type_traits>
-#include <vector>
 
 class Serialise
 {
 public:
-	explicit constexpr Serialise(std::vector<std::byte>& data)
+	explicit constexpr Serialise(std::span<std::byte> data) noexcept
 		: m_data {data}
 	{}
 
 	template <Fundamental T>
 	constexpr void operator()(T& value)
 	{
-		std::copy_n(reinterpret_cast<const std::byte*>(&value), sizeof(T), std::back_inserter(m_data));
+		writeBytes({reinterpret_cast<const std::byte*>(&value), sizeof(T)});
+	}
+
+	template <VarInt T>
+	constexpr void operator()(T& value)
+	{
+		writeBytes(value.bytes());
 	}
 
 	template <Enum T>
@@ -48,14 +53,20 @@ public:
 			{ operator()(elem); });
 	}
 
-	template <VarInt T>
-	constexpr void operator()(T& value)
+private:
+	constexpr void writeBytes(std::span<const std::byte> data)
 	{
-		std::copy_n(std::begin(value.bytes()), value.size(), std::back_inserter(m_data));
+		if (m_pointer + data.size() > m_data.size())
+		{
+			throw;  // Not enough space exception
+		}
+
+		std::copy_n(std::begin(data), data.size(), std::begin(m_data) + m_pointer);
+		m_pointer += data.size();
 	}
 
-private:
-	std::vector<std::byte>& m_data;
+	std::size_t          m_pointer {0};
+	std::span<std::byte> m_data {};
 };
 
 #endif  // SERIALISE_H_

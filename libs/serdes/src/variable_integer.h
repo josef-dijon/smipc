@@ -6,7 +6,7 @@
 #include <bit>
 #include <cstddef>
 #include <cstdint>
-#include <vector>
+#include <span>
 
 static constexpr bool IsContinuationBitSet(std::byte b)
 {
@@ -33,8 +33,6 @@ static constexpr uint64_t ByteSwap(uint64_t value)
 class VariableInteger
 {
 public:
-	using Bytes = std::array<std::byte, 9u>;
-
 	constexpr VariableInteger(uint64_t value)
 		: m_value {value}
 	{
@@ -98,9 +96,9 @@ public:
 		return m_count;
 	}
 
-	Bytes bytes() const
+	std::span<const std::byte> bytes() const
 	{
-		return m_bytes;
+		return {m_bytes.data(), m_count};
 	}
 
 	uint64_t value() const
@@ -109,9 +107,9 @@ public:
 	}
 
 private:
-	uint64_t    m_value {0u};
-	Bytes       m_bytes {{{}, {}, {}, {}, {}, {}, {}, {}, {}}};
-	std::size_t m_count {1u};
+	uint64_t                  m_value {0u};
+	std::array<std::byte, 9u> m_bytes {{{}, {}, {}, {}, {}, {}, {}, {}, {}}};
+	std::size_t               m_count {1u};
 };
 
 template <class T>

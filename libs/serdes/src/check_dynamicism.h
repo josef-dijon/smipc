@@ -28,6 +28,12 @@ public:
 		m_isDynamic = true;
 	}
 
+	template <VarInt T>
+	constexpr void operator()(T& value)
+	{
+		m_isDynamic = true;
+	}
+
 private:
 	bool& m_isDynamic;
 };

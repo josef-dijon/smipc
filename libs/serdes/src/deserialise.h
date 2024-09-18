@@ -8,21 +8,27 @@
 #include <array>
 #include <cstddef>
 #include <iterator>
+#include <span>
 #include <type_traits>
-#include <vector>
 
 class Deserialise
 {
 public:
-	explicit constexpr Deserialise(const std::vector<std::byte>& data)
+	explicit constexpr Deserialise(std::span<const std::byte> data) noexcept
 		: m_data {data}
 	{}
 
 	template <Fundamental T>
 	constexpr void operator()(T& value)
 	{
-		std::copy_n(std::begin(m_data) + m_pointer, sizeof(T), reinterpret_cast<std::byte*>(&value));
-		m_pointer += sizeof(T);
+		readBytes({reinterpret_cast<std::byte*>(&value), sizeof(T)});
+	}
+
+	template <VarInt T>
+	constexpr void operator()(T& value)
+	{
+		value = VariableInteger(m_data.data() + m_pointer);
+		m_pointer += value.size();
 	}
 
 	template <Enum T>
@@ -51,16 +57,15 @@ public:
 			{ operator()(elem); });
 	}
 
-	template <VarInt T>
-	constexpr void operator()(T& value)
+private:
+	constexpr void readBytes(std::span<std::byte> data)
 	{
-		value = VariableInteger(m_data.data() + m_pointer);
-		m_pointer += value.size();
+		std::copy_n(std::begin(m_data) + m_pointer, data.size(), std::begin(data));
+		m_pointer += data.size();
 	}
 
-private:
-	const std::vector<std::byte>& m_data;
-	std::size_t                   m_pointer {0u};
+	std::span<const std::byte> m_data;
+	std::size_t                m_pointer {0u};
 };
 
 #endif  // DESERIALISE_H_

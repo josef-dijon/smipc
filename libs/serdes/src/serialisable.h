@@ -3,24 +3,43 @@
 
 #include "operator.h"
 
+#include <span>
+
+/**
+ * A wrapper class to make c++ class/structs serialisable.
+ *
+ * This class template is used to wrap a user struct to make it serialisable.
+ * The user must implement the processMembers function for their specialisation
+ * of this class.
+ */
 template <class T>
 class Serialisable
 {
 public:
-	constexpr void serialiseInto(std::vector<std::byte>& data) const
-	{
-		processMembers(Operator(Serialise(data)));
-	}
-
+	/**
+	 * Serialise the struct into a vector of bytes.
+	 *
+	 * @return serialised vector of bytes
+	 */
 	constexpr auto serialise() const -> std::vector<std::byte>
 	{
 		std::vector<std::byte> data {};
-		data.reserve(getActualSize());
+		data.resize(getActualSize());
 		processMembers(Operator(Serialise(data)));
 		return data;
 	}
 
-	constexpr void deserialise(const std::vector<std::byte>& data)
+	/**
+	 * Serialise into a provided span.
+	 *
+	 * @param data A std::span to which the data will be serialised.
+	 */
+	constexpr void serialiseInto(std::span<std::byte> data) const
+	{
+		processMembers(Operator(Serialise(data)));
+	}
+
+	constexpr void deserialise(std::span<const std::byte> data)
 	{
 		processMembers(Operator(Deserialise(data)));
 	}

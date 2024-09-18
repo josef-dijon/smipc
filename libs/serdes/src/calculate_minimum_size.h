@@ -19,6 +19,12 @@ public:
 		m_size += sizeof(T);
 	}
 
+	template <VarInt T>
+	constexpr void operator()(T& value)
+	{
+		m_size += value.size();
+	}
+
 	template <Enum T>
 	constexpr void operator()(T& value)
 	{
@@ -28,15 +34,15 @@ public:
 	template <Vector T>
 	constexpr void operator()(T& value)
 	{
-		constexpr VariableInteger varInt {std::size_t {0u}};
-		m_size += varInt.size();
+		VariableInteger size {std::size_t {0u}};
+		operator()(size);
 	}
 
 	template <String T>
 	constexpr void operator()(T& value)
 	{
-		constexpr VariableInteger varInt {std::size_t {0u}};
-		m_size += varInt.size();
+		VariableInteger size {std::size_t {0u}};
+		operator()(size);
 	}
 
 private:
