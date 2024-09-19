@@ -12,4 +12,6 @@ target_link_libraries(serdes-benchmarks PRIVATE benchmark::benchmark)
 
 set_property(TARGET serdes-benchmarks PROPERTY CXX_STANDARD 23)
 
-add_test(NAME serdes-benchmarks COMMAND serdes-benchmarks)
+add_test(NAME serdes-benchmarks
+         COMMAND serdes-benchmarks --benchmark_out=results.json
+                 --benchmark_out_format=json --benchmark_min_warmup_time=0.5)
