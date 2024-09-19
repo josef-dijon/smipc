@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <iterator>
 #include <stdexcept>
 #include <string>
 #include <string_view>
