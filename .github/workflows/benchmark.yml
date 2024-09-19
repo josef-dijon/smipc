@@ -69,14 +69,14 @@ jobs:
     - name: Benchmark
       # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-      run: ./build/libs/serdes/test/benchmarks/serdes-benchmarks --benchmark_out=build/benchmark_results.json --benchmark_out_format=json --benchmark_min_warmup_time=0.5
+      run: ${{ steps.strings.outputs.build-output-dir }}/libs/serdes/test/benchmarks/serdes-benchmarks --benchmark_out=${{ steps.strings.outputs.build-output-dir }}/benchmark_results.json --benchmark_out_format=json --benchmark_min_warmup_time=0.5
 
     - name: File benchmark results
       run: |
-        jq --argjson results $(cat ${{ github.workspace }}/build/benchmark_results.json ) '.benchmark-runs += [$results]' test/benchmark_history.json > build/tmp_benchmark_history.json
-        mv build/tmp_benchmark_history.json test/benchmark_history.json
+        jq --argjson results "$(cat ${{ github.workspace }}/build/benchmark_results.json )" '."benchmark-runs" += [$results]' test/benchmark_history.json > ${{ steps.strings.outputs.build-output-dir }}/tmp_benchmark_history.json
+        mv ${{ steps.strings.outputs.build-output-dir }}/tmp_benchmark_history.json ${{ github.workspace }}/test/benchmark_history.json
         git config --local user.email "josef@pixelrift.io"
         git config --local user.name "Github Actions"
-        git add test/benchmark_history.json
+        git add ${{ github.workspace }}/test/benchmark_history.json
         git commit -m "[CI] Update benchmark history"
         git push
