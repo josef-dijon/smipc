@@ -24,8 +24,8 @@ public:
 	constexpr auto serialise() const -> std::vector<std::byte>
 	{
 		std::vector<std::byte> data {};
-		data.resize(getActualSize());
-		processMembers(Operator(Serialise(data)));
+		data.resize(getSize());
+		processMembers(Operator {Serialise {data}});
 		return data;
 	}
 
@@ -36,64 +36,146 @@ public:
 	 */
 	constexpr void serialiseInto(std::span<std::byte> data) const
 	{
-		processMembers(Operator(Serialise(data)));
+		processMembers(Operator {Serialise {data}});
 	}
 
+	/**
+	 * Deserialise the struct from a vector of bytes.
+	 *
+	 * @param data A span of bytes to deserialise from.
+	 */
 	constexpr void deserialise(std::span<const std::byte> data)
 	{
-		processMembers(Operator(Deserialise(data)));
+		processMembers(Operator {Deserialise {data}});
 	}
 
+	/**
+	 * Get the minimum size of the serialised data.
+	 *
+	 * This function calculates the minimum size of the serialised data. It
+	 * assumes all dynamically sized data is empty. This is useful for pre-
+	 * allocating memory for serialisation, when getting the actual size is
+	 * not possible or too expensive.
+	 *
+	 * @return The minimum size of the serialised data.
+	 */
 	constexpr auto getMinimumSize() const -> std::size_t
 	{
 		std::size_t size {};
-		processMembers(Operator(CalculateMinimumSize(size)));
+		processMembers(Operator {CalculateMinimumSize {size}});
 		return size;
 	}
 
-	constexpr auto getActualSize() const -> std::size_t
+	/**
+	 * Get the actual size of the serialised data.
+	 *
+	 * This function calculates the actual size of the serialised data. It
+	 * takes into account the actual size of all the data members. This is
+	 * useful for pre-allocating memory for serialisation, when getting the
+	 * minimum size is not possible or too expensive.
+	 *
+	 * @return The actual size of the serialised data.
+	 */
+	constexpr auto getSize() const -> std::size_t
 	{
 		std::size_t size {};
-		processMembers(Operator(CalculateActualSize(size)));
+		processMembers(Operator {CalculateActualSize {size}});
 		return size;
 	}
 
+	/**
+	 * Check if the struct has any dynamic data members.
+	 *
+	 * This function checks if the struct has any dynamic data members. It
+	 * returns true if there are any dynamic data members, otherwise false.
+	 *
+	 * @return True if the struct has dynamic data members, otherwise false.
+	 */
 	constexpr auto isDynamic() const -> bool
 	{
 		bool dynamic {false};
-		processMembers(Operator(CheckDynamicism(dynamic)));
+		processMembers(Operator {CheckDynamicism {dynamic}});
 		return dynamic;
 	}
 
+	/**
+	 * Check if the struct is entirely composed of static data members.
+	 *
+	 * This function checks if the struct is entirely composed of static data
+	 * members. It returns true if all the data members are static, otherwise
+	 * false.
+	 *
+	 * @return True if the struct has static data members, otherwise false.
+	 */
 	constexpr auto isStatic() const -> bool
 	{
 		return ! isDynamic();
 	}
 
+	/**
+	 * Dereference accessor for the wrapped struct.
+	 *
+	 * This function allows the user to access the wrapped struct directly.
+	 *
+	 * @return A reference to the wrapped struct.
+	 */
 	constexpr T& operator*()
 	{
-		return m_value;
+		return m_struct;
 	}
 
+	/**
+	 * Dereference accessor for the wrapped struct.
+	 *
+	 * This function allows the user to access the wrapped struct directly.
+	 *
+	 * @return A pointer to the wrapped struct.
+	 */
 	constexpr T* operator->()
 	{
-		return &m_value;
+		return &m_struct;
 	}
 
+	/**
+	 * Dereference accessor for the wrapped struct.
+	 *
+	 * This function allows the user to access the wrapped struct directly.
+	 *
+	 * @return A reference to the wrapped struct.
+	 */
 	constexpr const T& operator*() const
 	{
-		return m_value;
+		return m_struct;
 	}
 
+	/**
+	 * Dereference accessor for the wrapped struct.
+	 *
+	 * This function allows the user to access the wrapped struct directly.
+	 *
+	 * @return A pointer to the wrapped struct.
+	 */
 	constexpr const T* operator->() const
 	{
-		return &m_value;
+		return &m_struct;
 	}
 
 private:
+	/**
+	 * Process the members of the struct.
+	 *
+	 * This function is used to process the members of the struct. It is
+	 * implemented by the user for their specialisation of this class.
+	 *
+	 * @param op The operator to use to process the members.
+	 */
 	constexpr void processMembers(Operator&& op) const;
 
-	mutable T m_value {};
+	/**
+	 * The wrapped struct. Mutable to allow for const member function where
+	 * appropriate.
+	 */
+	mutable T m_struct {};
 };
 
 #endif  // SERIALISABLE_H_

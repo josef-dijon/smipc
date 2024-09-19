@@ -1,5 +1,6 @@
 #include "serdes/serdes.h"
 
+#include <algorithm>
 #include <cstdint>
 #include <cstring>
 #include <gtest/gtest.h>
@@ -24,6 +25,14 @@ struct MyStruct
 bool operator==(const MyStruct& a, const MyStruct& b)
 {
 	return std::tie(a.a, a.b, a.c, a.d, a.e) == std::tie(b.a, b.b, b.c, b.d, b.e);
+}
+
+std::vector<std::byte> toBytes(std::vector<int> v)
+{
+	std::vector<std::byte> bytes {};
+	std::for_each(v.begin(), v.end(), [&bytes](int i)
+		{ bytes.push_back(std::byte(i)); });
+	return bytes;
 }
 
 SERIALISABLE(MyStruct)
@@ -124,7 +133,7 @@ TEST(serdes, size)
 	const SerialisableMyStruct x {};
 
 	EXPECT_EQ(x.getMinimumSize(), 12);
-	EXPECT_EQ(x.getActualSize(), 27);
+	EXPECT_EQ(x.getSize(), 27);
 	EXPECT_TRUE(x.isDynamic());
 	EXPECT_FALSE(x.isStatic());
 }
@@ -132,34 +141,7 @@ TEST(serdes, size)
 TEST(serdes, serialise)
 {
 	const SerialisableMyStruct   x {};
-	const std::vector<std::byte> expectedBytes {
-		std::byte(0u),
-		std::byte(0u),
-		std::byte(0u),
-		std::byte(0u),
-		std::byte(0u),
-		std::byte(0u),
-		std::byte(0u),
-		std::byte(0u),
-		std::byte(0u),
-		std::byte(0u),
-		std::byte(4u),
-		std::byte(1u),
-		std::byte(2u),
-		std::byte(3u),
-		std::byte(4u),
-		std::byte(11u),
-		std::byte('h'),
-		std::byte('e'),
-		std::byte('l'),
-		std::byte('l'),
-		std::byte('o'),
-		std::byte(' '),
-		std::byte('w'),
-		std::byte('o'),
-		std::byte('r'),
-		std::byte('l'),
-		std::byte('d')};
+	const auto                   expectedBytes {toBytes({0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 1, 2, 3, 4, 11, 'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd'})};
 	const std::vector<std::byte> bytes {x.serialise()};
 
 	EXPECT_EQ(bytes, expectedBytes);
@@ -167,35 +149,7 @@ TEST(serdes, serialise)
 
 TEST(serdes, deserialise)
 {
-	const std::vector<std::byte> bytes {
-		std::byte(0u),
-		std::byte(0u),
-		std::byte(0u),
-		std::byte(0u),
-		std::byte(0u),
-		std::byte(0u),
-		std::byte(0u),
-		std::byte(0u),
-		std::byte(0u),
-		std::byte(0u),
-		std::byte(4u),
-		std::byte(1u),
-		std::byte(2u),
-		std::byte(3u),
-		std::byte(4u),
-		std::byte(11u),
-		std::byte('h'),
-		std::byte('e'),
-		std::byte('l'),
-		std::byte('l'),
-		std::byte('o'),
-		std::byte(' '),
-		std::byte('w'),
-		std::byte('o'),
-		std::byte('r'),
-		std::byte('l'),
-		std::byte('d')};
-
+	const auto           bytes {toBytes({0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 1, 2, 3, 4, 11, 'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd'})};
 	SerialisableMyStruct x {};
 	x.deserialise(bytes);
 

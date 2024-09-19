@@ -9,6 +9,6 @@
 	template <>                                  \
 	constexpr void Serialisable##cls::processMembers(Operator&& op) const
 
-#define MEMBER(name) op(m_value.name)
+#define MEMBER(name) op(m_struct.name)
 
 #endif  // SERDES_H_

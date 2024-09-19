@@ -9,12 +9,17 @@
 
 #include <variant>
 
-using Operation = std::variant<CalculateMinimumSize, CalculateActualSize, CheckDynamicism, Serialise, Deserialise>;
+using Operation = std::variant<
+	CalculateMinimumSize,
+	CalculateActualSize,
+	CheckDynamicism,
+	Serialise,
+	Deserialise>;
 
 class Operator
 {
 public:
-	explicit constexpr Operator(Operation&& operation)
+	explicit constexpr Operator(Operation&& operation) noexcept
 		: m_operation {operation}
 	{}
 

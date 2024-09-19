@@ -7,22 +7,41 @@
 
 enum class MyEnum : uint16_t
 {
+	Apple,
+	Banana,
+	Cherry,
+	Durian,
+	Elderberry,
 };
 
-struct MyStruct
+struct MyStructSimple
 {
-	uint32_t             a {};               // 4, 4
-	float                b {};               // 4, 4
-	MyEnum               c {};               // 2, 2
-	std::vector<uint8_t> d {1, 2, 3, 4};     // 4, 12
-	std::string          e {"hello world"};  // 4, 19
-											 // 18, 41
-											 //
-	std::vector<uint16_t>    f {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	uint32_t a {42};
+	float    b {3.14159f};
+	double   c {2.71828};
+	MyEnum   d {MyEnum::Banana};
+};
+
+struct MyStructComplex
+{
+	uint32_t                 a {42};
+	float                    b {3.14159f};
+	MyEnum                   c {MyEnum::Cherry};
+	std::vector<uint8_t>     d {1, 2, 3, 4};
+	std::string              e {"hello world"};
+	std::vector<uint16_t>    f {0, 0, 0, 0, 5, 0, 0, 0, 0, 9, 0, 0, 0};
 	std::vector<std::string> g {"fdsafda", "fdsafdsa", "rewqrew", "fdsjaklhfudsaihjkjhfdksajhkfd", "fjdskafhds7ahjkfjdsajk"};
 };
 
-SERIALISABLE(MyStruct)
+SERIALISABLE(MyStructSimple)
+{
+	MEMBER(a);
+	MEMBER(b);
+	MEMBER(c);
+	MEMBER(d);
+};
+
+SERIALISABLE(MyStructComplex)
 {
 	MEMBER(a);
 	MEMBER(b);
@@ -33,9 +52,9 @@ SERIALISABLE(MyStruct)
 	MEMBER(g);
 }
 
-static void BM_GetMinimumSize(benchmark::State& state)
+static void BM_GetMinimumSizeSimple(benchmark::State& state)
 {
-	const SerialisableMyStruct x {};
+	const SerialisableMyStructSimple x {};
 
 	for (auto _ : state)
 	{
@@ -44,20 +63,20 @@ static void BM_GetMinimumSize(benchmark::State& state)
 	}
 }
 
-static void BM_GetActualSize(benchmark::State& state)
+static void BM_GetActualSizeSimple(benchmark::State& state)
 {
-	const SerialisableMyStruct x {};
+	const SerialisableMyStructSimple x {};
 
 	for (auto _ : state)
 	{
-		std::size_t size = x.getActualSize();
+		std::size_t size = x.getSize();
 		benchmark::DoNotOptimize(size);
 	}
 }
 
-static void BM_CheckDynamicism(benchmark::State& state)
+static void BM_CheckDynamicismSimple(benchmark::State& state)
 {
-	const SerialisableMyStruct x {};
+	const SerialisableMyStructSimple x {};
 
 	for (auto _ : state)
 	{
@@ -66,9 +85,9 @@ static void BM_CheckDynamicism(benchmark::State& state)
 	}
 }
 
-static void BM_Serialise(benchmark::State& state)
+static void BM_SerialiseSimple(benchmark::State& state)
 {
-	const SerialisableMyStruct x {};
+	const SerialisableMyStructSimple x {};
 
 	for (auto _ : state)
 	{
@@ -77,10 +96,10 @@ static void BM_Serialise(benchmark::State& state)
 	}
 }
 
-static void BM_SerialiseInto(benchmark::State& state)
+static void BM_SerialiseIntoSimple(benchmark::State& state)
 {
-	const SerialisableMyStruct x {};
-	std::vector<std::byte>     data(x.getActualSize());
+	const SerialisableMyStructSimple x {};
+	std::vector<std::byte>           data(x.getSize());
 
 	for (auto _ : state)
 	{
@@ -89,24 +108,99 @@ static void BM_SerialiseInto(benchmark::State& state)
 	}
 }
 
-static void BM_Deserialise(benchmark::State& state)
+static void BM_DeserialiseSimple(benchmark::State& state)
 {
-	const SerialisableMyStruct x {};
-	const auto                 data {x.serialise()};
+	const SerialisableMyStructSimple x {};
+	const auto                       data {x.serialise()};
 
 	for (auto _ : state)
 	{
-		SerialisableMyStruct s {};
+		SerialisableMyStructSimple s {};
 		s.deserialise(data);
 		benchmark::DoNotOptimize(s);
 	}
 }
 
-BENCHMARK(BM_GetMinimumSize);
-BENCHMARK(BM_GetActualSize);
-BENCHMARK(BM_CheckDynamicism);
-BENCHMARK(BM_Serialise);
-BENCHMARK(BM_SerialiseInto);
-BENCHMARK(BM_Deserialise);
+static void BM_GetMinimumSizeComplex(benchmark::State& state)
+{
+	const SerialisableMyStructComplex x {};
+
+	for (auto _ : state)
+	{
+		std::size_t size = x.getMinimumSize();
+		benchmark::DoNotOptimize(size);
+	}
+}
+
+static void BM_GetActualSizeComplex(benchmark::State& state)
+{
+	const SerialisableMyStructComplex x {};
+
+	for (auto _ : state)
+	{
+		std::size_t size = x.getSize();
+		benchmark::DoNotOptimize(size);
+	}
+}
+
+static void BM_CheckDynamicismComplex(benchmark::State& state)
+{
+	const SerialisableMyStructComplex x {};
+
+	for (auto _ : state)
+	{
+		bool size = x.isDynamic();
+		benchmark::DoNotOptimize(size);
+	}
+}
+
+static void BM_SerialiseComplex(benchmark::State& state)
+{
+	const SerialisableMyStructComplex x {};
+
+	for (auto _ : state)
+	{
+		auto data {x.serialise()};
+		benchmark::DoNotOptimize(data);
+	}
+}
+
+static void BM_SerialiseIntoComplex(benchmark::State& state)
+{
+	const SerialisableMyStructComplex x {};
+	std::vector<std::byte>            data(x.getSize());
+
+	for (auto _ : state)
+	{
+		x.serialiseInto(data);
+		benchmark::DoNotOptimize(data);
+	}
+}
+
+static void BM_DeserialiseComplex(benchmark::State& state)
+{
+	const SerialisableMyStructComplex x {};
+	const auto                        data {x.serialise()};
+
+	for (auto _ : state)
+	{
+		SerialisableMyStructComplex s {};
+		s.deserialise(data);
+		benchmark::DoNotOptimize(s);
+	}
+}
+
+BENCHMARK(BM_GetMinimumSizeSimple);
+BENCHMARK(BM_GetActualSizeSimple);
+BENCHMARK(BM_CheckDynamicismSimple);
+BENCHMARK(BM_SerialiseSimple);
+BENCHMARK(BM_SerialiseIntoSimple);
+BENCHMARK(BM_DeserialiseSimple);
+BENCHMARK(BM_GetMinimumSizeComplex);
+BENCHMARK(BM_GetActualSizeComplex);
+BENCHMARK(BM_CheckDynamicismComplex);
+BENCHMARK(BM_SerialiseComplex);
+BENCHMARK(BM_SerialiseIntoComplex);
+BENCHMARK(BM_DeserialiseComplex);
 
 BENCHMARK_MAIN();
