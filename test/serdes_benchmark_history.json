@@ -427,6 +427,220 @@
           "time_unit": "ns"
         }
       ]
+    },
+    {
+      "context": {
+        "date": "2024-09-19T23:32:38+10:00",
+        "host_name": "archlinux",
+        "executable": "/home/josef/projects/smipc/build/libs/serdes/test/benchmarks/serdes-benchmarks",
+        "num_cpus": 16,
+        "mhz_per_cpu": 3000,
+        "cpu_scaling_enabled": true,
+        "caches": [
+          {
+            "type": "Data",
+            "level": 1,
+            "size": 32768,
+            "num_sharing": 2
+          },
+          {
+            "type": "Instruction",
+            "level": 1,
+            "size": 32768,
+            "num_sharing": 2
+          },
+          {
+            "type": "Unified",
+            "level": 2,
+            "size": 524288,
+            "num_sharing": 2
+          },
+          {
+            "type": "Unified",
+            "level": 3,
+            "size": 4194304,
+            "num_sharing": 8
+          }
+        ],
+        "load_avg": [
+          0.691406,
+          0.337891,
+          0.204102
+        ],
+        "library_version": "v1.9.0",
+        "library_build_type": "release",
+        "json_schema_version": 1
+      },
+      "benchmarks": [
+        {
+          "name": "BM_GetMinimumSizeSimple",
+          "family_index": 0,
+          "per_family_instance_index": 0,
+          "run_name": "BM_GetMinimumSizeSimple",
+          "run_type": "iteration",
+          "repetitions": 1,
+          "repetition_index": 0,
+          "threads": 1,
+          "iterations": 6128957897,
+          "real_time": 0.11453064285914967,
+          "cpu_time": 0.11429098971994453,
+          "time_unit": "ns"
+        },
+        {
+          "name": "BM_GetActualSizeSimple",
+          "family_index": 1,
+          "per_family_instance_index": 0,
+          "run_name": "BM_GetActualSizeSimple",
+          "run_type": "iteration",
+          "repetitions": 1,
+          "repetition_index": 0,
+          "threads": 1,
+          "iterations": 6131852345,
+          "real_time": 0.11444830754488589,
+          "cpu_time": 0.11415039397854254,
+          "time_unit": "ns"
+        },
+        {
+          "name": "BM_CheckDynamicismSimple",
+          "family_index": 2,
+          "per_family_instance_index": 0,
+          "run_name": "BM_CheckDynamicismSimple",
+          "run_type": "iteration",
+          "repetitions": 1,
+          "repetition_index": 0,
+          "threads": 1,
+          "iterations": 6131527824,
+          "real_time": 0.11446343654384321,
+          "cpu_time": 0.11416078929955116,
+          "time_unit": "ns"
+        },
+        {
+          "name": "BM_SerialiseSimple",
+          "family_index": 3,
+          "per_family_instance_index": 0,
+          "run_name": "BM_SerialiseSimple",
+          "run_type": "iteration",
+          "repetitions": 1,
+          "repetition_index": 0,
+          "threads": 1,
+          "iterations": 67962067,
+          "real_time": 10.325577649074296,
+          "cpu_time": 10.298241105586147,
+          "time_unit": "ns"
+        },
+        {
+          "name": "BM_SerialiseIntoSimple",
+          "family_index": 4,
+          "per_family_instance_index": 0,
+          "run_name": "BM_SerialiseIntoSimple",
+          "run_type": "iteration",
+          "repetitions": 1,
+          "repetition_index": 0,
+          "threads": 1,
+          "iterations": 762813546,
+          "real_time": 0.91999221655202945,
+          "cpu_time": 0.91761728756715200,
+          "time_unit": "ns"
+        },
+        {
+          "name": "BM_DeserialiseSimple",
+          "family_index": 5,
+          "per_family_instance_index": 0,
+          "run_name": "BM_DeserialiseSimple",
+          "run_type": "iteration",
+          "repetitions": 1,
+          "repetition_index": 0,
+          "threads": 1,
+          "iterations": 510702441,
+          "real_time": 1.3737903203008541,
+          "cpu_time": 1.3701245673113991,
+          "time_unit": "ns"
+        },
+        {
+          "name": "BM_GetMinimumSizeComplex",
+          "family_index": 6,
+          "per_family_instance_index": 0,
+          "run_name": "BM_GetMinimumSizeComplex",
+          "run_type": "iteration",
+          "repetitions": 1,
+          "repetition_index": 0,
+          "threads": 1,
+          "iterations": 6131868835,
+          "real_time": 0.11447284048099673,
+          "cpu_time": 0.11416676902874420,
+          "time_unit": "ns"
+        },
+        {
+          "name": "BM_GetActualSizeComplex",
+          "family_index": 7,
+          "per_family_instance_index": 0,
+          "run_name": "BM_GetActualSizeComplex",
+          "run_type": "iteration",
+          "repetitions": 1,
+          "repetition_index": 0,
+          "threads": 1,
+          "iterations": 38593753,
+          "real_time": 18.200367116398862,
+          "cpu_time": 18.152419175196549,
+          "time_unit": "ns"
+        },
+        {
+          "name": "BM_CheckDynamicismComplex",
+          "family_index": 8,
+          "per_family_instance_index": 0,
+          "run_name": "BM_CheckDynamicismComplex",
+          "run_type": "iteration",
+          "repetitions": 1,
+          "repetition_index": 0,
+          "threads": 1,
+          "iterations": 6132011986,
+          "real_time": 0.11444777140064381,
+          "cpu_time": 0.11414781862756768,
+          "time_unit": "ns"
+        },
+        {
+          "name": "BM_SerialiseComplex",
+          "family_index": 9,
+          "per_family_instance_index": 0,
+          "run_name": "BM_SerialiseComplex",
+          "run_type": "iteration",
+          "repetitions": 1,
+          "repetition_index": 0,
+          "threads": 1,
+          "iterations": 2866157,
+          "real_time": 237.12721424552532,
+          "cpu_time": 236.51625224996343,
+          "time_unit": "ns"
+        },
+        {
+          "name": "BM_SerialiseIntoComplex",
+          "family_index": 10,
+          "per_family_instance_index": 0,
+          "run_name": "BM_SerialiseIntoComplex",
+          "run_type": "iteration",
+          "repetitions": 1,
+          "repetition_index": 0,
+          "threads": 1,
+          "iterations": 3544789,
+          "real_time": 198.99464171207077,
+          "cpu_time": 198.48439921247723,
+          "time_unit": "ns"
+        },
+        {
+          "name": "BM_DeserialiseComplex",
+          "family_index": 11,
+          "per_family_instance_index": 0,
+          "run_name": "BM_DeserialiseComplex",
+          "run_type": "iteration",
+          "repetitions": 1,
+          "repetition_index": 0,
+          "threads": 1,
+          "iterations": 4197257,
+          "real_time": 167.28822133117430,
+          "cpu_time": 166.83809568963738,
+          "time_unit": "ns"
+        }
+      ]
     }
   ]
 }

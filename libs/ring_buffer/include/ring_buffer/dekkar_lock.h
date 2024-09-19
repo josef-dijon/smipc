@@ -3,73 +3,77 @@
 
 #include <atomic>
 
-class DekkarLock {
+class DekkarLock
+{
 public:
-    template <bool Swap>
-    DekkarLock(std::atomic_bool& flag1, std::atomic_bool& flag2, std::atomic_bool& turn) noexcept
-        : flag1_{flag1}, flag2_{flag2}, turn_{turn}, swap_{false};
+	DekkarLock(std::atomic_bool& flag1, std::atomic_bool& flag2, std::atomic_bool& turn) noexcept
+		: m_flag1 {flag1}
+		, m_flag2 {flag2}
+		, m_turn {turn}
+	{}
 
-    DekkarLock() = delete;
-    ~DekkarLock() = default;
-    DekkarLock(const DekkarLock&) = delete;
-    DekkarLock& operator=(const DekkarLock&) = delete;
-    DekkarLock(DekkarLock&&) = delete;
-    DekkarLock& operator=(DekkarLock&&) = delete;
+	DekkarLock()                             = delete;
+	~DekkarLock()                            = default;
+	DekkarLock(const DekkarLock&)            = delete;
+	DekkarLock& operator=(const DekkarLock&) = delete;
+	DekkarLock(DekkarLock&&)                 = delete;
+	DekkarLock& operator=(DekkarLock&&)      = delete;
 
-    void lock() noexcept {
-        flag1_.store(true);
+	void lock() noexcept
+	{
+		m_flag1.store(true);
 
-        while (flag2_.load()) {
-            if (flag1_.load()) {
-                flag1_.store(false);
-                while (turn_.load()) {;}
-                flag1_.store(true);
-            }
-        }
-    }
+		while (m_flag2.load())
+		{
+			if (m_flag1.load())
+			{
+				m_flag1.store(false);
+				while (m_turn.load())
+				{
+					;
+				}
+				m_flag1.store(true);
+			}
+		}
+	}
 
-    void unlock() noexcept {
-        turn_.store(true);
-        flag1_.store(false);
-    }
+	void unlock() noexcept
+	{
+		m_turn.store(true);
+		m_flag1.store(false);
+	}
 
-    bool try_lock() noexcept {
-        flag1_.store(true);
-        
-        if (flag2_.load()) {
-            flag1_.store(false);
-            return false;
-        }
-        
-        if (!flag1_.load()) {
-            flag1_.store(false);
-            return false;
-        }
-        
-        flag1_.store(false);
+	bool try_lock() noexcept
+	{
+		m_flag1.store(true);
 
-        if (turn_.load()) {
-            return false;
-        }
-        
-        flag1_.store(true);
-        return true;
-    }
+		if (m_flag2.load())
+		{
+			m_flag1.store(false);
+			return false;
+		}
+
+		if (! m_flag1.load())
+		{
+			m_flag1.store(false);
+			return false;
+		}
+
+		m_flag1.store(false);
+
+		if (m_turn.load())
+		{
+			return false;
+		}
+
+		m_flag1.store(true);
+		return true;
+	}
 
 private:
-    std::atomic_bool& flag1_;
-    std::atomic_bool& flag2_;
-    std::atomic_bool& turn_;
-    bool swap_ {false};
+	std::atomic_bool& m_flag1;
+	std::atomic_bool& m_flag2;
+	std::atomic_bool& m_turn;
 };
-    
-template <>
-DekkarLock::DekkarLock<false>(std::atomic_bool& flag1, std::atomic_bool& flag2, std::atomic_bool& turn) noexcept
-    : flag1_{flag1}, flag2_{flag2}, turn_{turn}, swap_{false} {}
-
-template <>
-DekkarLock::DekkarLock<true>(std::atomic_bool& flag1, std::atomic_bool& flag2, std::atomic_bool& turn) noexcept
-    : flag1_{flag2}, flag2_{flag1}, turn_{turn}, swap_{true} {}
-    
 
 #endif  // DEKKAR_LOCK_H_

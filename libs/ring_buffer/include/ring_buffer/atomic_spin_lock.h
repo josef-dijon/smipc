@@ -3,28 +3,36 @@
 
 #include <atomic>
 
-class AtomicSpinLock {
+class AtomicSpinLock
+{
 public:
-    AtomicSpinLock() = default;
-    ~AtomicSpinLock() = default;
-    AtomicSpinLock(const AtomicSpinLock&) = delete;
-    AtomicSpinLock& operator=(const AtomicSpinLock&) = delete;
-    AtomicSpinLock(AtomicSpinLock&&) = delete;
-    AtomicSpinLock& operator=(AtomicSpinLock&&) = delete;
+	AtomicSpinLock()                                 = default;
+	~AtomicSpinLock()                                = default;
+	AtomicSpinLock(const AtomicSpinLock&)            = delete;
+	AtomicSpinLock& operator=(const AtomicSpinLock&) = delete;
+	AtomicSpinLock(AtomicSpinLock&&)                 = delete;
+	AtomicSpinLock& operator=(AtomicSpinLock&&)      = delete;
 
-    void lock() noexcept {
-        while (!try_lock()) {;}
-    }
+	void lock() noexcept
+	{
+		while (! try_lock())
+		{
+			;
+		}
+	}
 
-    void unlock() noexcept {
-        lock_.clear(std::memory_order_release);
-    }
+	void unlock() noexcept
+	{
+		m_lock.clear(std::memory_order_release);
+	}
 
-    bool try_lock() noexcept {
-        return lock_.test_and_set(std::memory_order_acquire);
-    }
+	bool try_lock() noexcept
+	{
+		return m_lock.test_and_set(std::memory_order_acquire);
+	}
+
 private:
-    std::atomic_flag lock_ = ATOMIC_FLAG_INIT;
+	std::atomic_flag m_lock = ATOMIC_FLAG_INIT;
 };
 
 #endif  // ATOMIC_SPIN_LOCK_H_
