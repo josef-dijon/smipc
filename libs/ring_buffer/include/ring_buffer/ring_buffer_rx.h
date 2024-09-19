@@ -43,7 +43,7 @@ public:
 		}
 
 		std::lock_guard   lock(m_lock);
-		auto*             messageHeader {reinterpret_cast<RingBuffer<S, A>::MessageHeader*>(m_ringBuffer->buffer.data() + m_ringBuffer->front)};
+		auto*             messageHeader {reinterpret_cast<typename RingBuffer<S, A>::MessageHeader*>(m_ringBuffer->buffer.data() + m_ringBuffer->front)};
 		std::unique_lock  messageLock(messageHeader->lock);
 		const std::size_t size {messageHeader->size};
 		const std::size_t alignedSize {RingBuffer<S, A>::AlignedSize(size)};

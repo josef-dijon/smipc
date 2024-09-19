@@ -84,7 +84,7 @@ public:
 			throw std::overflow_error("Buffer overflow");
 		}
 
-		auto*           messageHeader {new (m_ringBuffer->buffer.data() + headerStart) RingBuffer<S, A>::MessageHeader {size}};
+		auto*           messageHeader {new (m_ringBuffer->buffer.data() + headerStart) typename RingBuffer<S, A>::MessageHeader {size}};
 		std::lock_guard messageLock(messageHeader->lock);
 
 		if (tmpNext + alignedSize < m_ringBuffer->buffer.size())
