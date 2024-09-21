@@ -17,19 +17,19 @@ enum class MyEnum : uint16_t
 struct MyStructSimple
 {
 	uint32_t a {42};
-	float    b {3.14159f};
-	double   c {2.71828};
-	MyEnum   d {MyEnum::Banana};
+	float b {3.14159f};
+	double c {2.71828};
+	MyEnum d {MyEnum::Banana};
 };
 
 struct MyStructComplex
 {
-	uint32_t                 a {42};
-	float                    b {3.14159f};
-	MyEnum                   c {MyEnum::Cherry};
-	std::vector<uint8_t>     d {1, 2, 3, 4};
-	std::string              e {"hello world"};
-	std::vector<uint16_t>    f {0, 0, 0, 0, 5, 0, 0, 0, 0, 9, 0, 0, 0};
+	uint32_t a {42};
+	float b {3.14159f};
+	MyEnum c {MyEnum::Cherry};
+	std::vector<uint8_t> d {1, 2, 3, 4};
+	std::string e {"hello world"};
+	std::vector<uint16_t> f {0, 0, 0, 0, 5, 0, 0, 0, 0, 9, 0, 0, 0};
 	std::vector<std::string> g {"fdsafda", "fdsafdsa", "rewqrew", "fdsjaklhfudsaihjkjhfdksajhkfd", "fjdskafhds7ahjkfjdsajk"};
 };
 
@@ -99,7 +99,7 @@ static void BM_SerialiseSimple(benchmark::State& state)
 static void BM_SerialiseIntoSimple(benchmark::State& state)
 {
 	const SerialisableMyStructSimple x {};
-	std::vector<std::byte>           data(x.getSize());
+	std::vector<std::byte> data(x.getSize());
 
 	for (auto _ : state)
 	{
@@ -111,7 +111,7 @@ static void BM_SerialiseIntoSimple(benchmark::State& state)
 static void BM_DeserialiseSimple(benchmark::State& state)
 {
 	const SerialisableMyStructSimple x {};
-	const auto                       data {x.serialise()};
+	const auto data {x.serialise()};
 
 	for (auto _ : state)
 	{
@@ -168,7 +168,7 @@ static void BM_SerialiseComplex(benchmark::State& state)
 static void BM_SerialiseIntoComplex(benchmark::State& state)
 {
 	const SerialisableMyStructComplex x {};
-	std::vector<std::byte>            data(x.getSize());
+	std::vector<std::byte> data(x.getSize());
 
 	for (auto _ : state)
 	{
@@ -180,7 +180,7 @@ static void BM_SerialiseIntoComplex(benchmark::State& state)
 static void BM_DeserialiseComplex(benchmark::State& state)
 {
 	const SerialisableMyStructComplex x {};
-	const auto                        data {x.serialise()};
+	const auto data {x.serialise()};
 
 	for (auto _ : state)
 	{

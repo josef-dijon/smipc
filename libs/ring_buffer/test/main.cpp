@@ -36,14 +36,14 @@ int main()
 	constexpr std::size_t page_size {4096u};
 	constexpr std::size_t size {page_size * 256u};
 	// constexpr std::size_t size {256u};
-	auto                   memory {std::make_unique<uint8_t[]>(size)};
+	auto memory {std::make_unique<uint8_t[]>(size)};
 	RingBufferRx<size, 4u> rx {memory.get()};
 	RingBufferTx<size, 4u> tx {memory.get()};
 
 	std::cout << "Size of ring buffer: " << sizeof(RingBuffer<size, 4>) << '\n';
 
 	std::stack<std::string> stack {};
-	std::mutex              lock {};
+	std::mutex lock {};
 
 	const auto rx_worker = [&]
 	{

@@ -27,10 +27,10 @@ public:
 	constexpr void operator()(T& value)
 	{
 		std::visit([this, &value](auto&& op)
-			{
+				   {
 				using Op = std::decay_t<decltype(op)>;
 				std::get<Op>(m_operation)(value); },
-			m_operation);
+				   m_operation);
 	}
 
 private:

@@ -6,12 +6,12 @@
 class AtomicSpinLock
 {
 public:
-	AtomicSpinLock()                                 = default;
-	~AtomicSpinLock()                                = default;
-	AtomicSpinLock(const AtomicSpinLock&)            = delete;
+	AtomicSpinLock() = default;
+	~AtomicSpinLock() = default;
+	AtomicSpinLock(const AtomicSpinLock&) = delete;
 	AtomicSpinLock& operator=(const AtomicSpinLock&) = delete;
-	AtomicSpinLock(AtomicSpinLock&&)                 = delete;
-	AtomicSpinLock& operator=(AtomicSpinLock&&)      = delete;
+	AtomicSpinLock(AtomicSpinLock&&) = delete;
+	AtomicSpinLock& operator=(AtomicSpinLock&&) = delete;
 
 	void lock() noexcept
 	{

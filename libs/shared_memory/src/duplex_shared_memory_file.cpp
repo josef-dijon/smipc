@@ -11,7 +11,8 @@ DuplexSharedMemoryFile::DuplexSharedMemoryFile(std::string_view rxName, std::str
 	{
 		m_sharedMemoryFileRx = MakeSharedMemoryFile(rxName, size);
 	}
-	catch ([[maybe_unused]] const std::runtime_error& e)
+	catch ([[maybe_unused]]
+		   const std::runtime_error& e)
 	{
 		// handle exception
 	}
@@ -20,7 +21,8 @@ DuplexSharedMemoryFile::DuplexSharedMemoryFile(std::string_view rxName, std::str
 	{
 		m_sharedMemoryFileTx = MakeSharedMemoryFile(txName, size);
 	}
-	catch ([[maybe_unused]] const std::runtime_error& e)
+	catch ([[maybe_unused]]
+		   const std::runtime_error& e)
 	{
 		// handle exception
 	}

@@ -42,13 +42,13 @@ public:
 			return {};
 		}
 
-		std::lock_guard   lock(m_lock);
-		auto*             messageHeader {reinterpret_cast<typename RingBuffer<S, A>::MessageHeader*>(m_ringBuffer->buffer.data() + m_ringBuffer->front)};
-		std::unique_lock  messageLock(messageHeader->lock);
+		std::lock_guard lock(m_lock);
+		auto* messageHeader {reinterpret_cast<typename RingBuffer<S, A>::MessageHeader*>(m_ringBuffer->buffer.data() + m_ringBuffer->front)};
+		std::unique_lock messageLock(messageHeader->lock);
 		const std::size_t size {messageHeader->size};
 		const std::size_t alignedSize {RingBuffer<S, A>::AlignedSize(size)};
-		std::size_t       tmpFront     = m_ringBuffer->front;
-		std::size_t       tmpFreeSpace = m_ringBuffer->freeSpace;
+		std::size_t tmpFront = m_ringBuffer->front;
+		std::size_t tmpFreeSpace = m_ringBuffer->freeSpace;
 
 		std::vector<uint8_t> data {};
 		data.reserve(size);
@@ -101,14 +101,14 @@ public:
 			tmpFreeSpace += RingBuffer<S, A>::AlignedSize(size - part1Size);
 		}
 
-		m_ringBuffer->front     = static_cast<uint32_t>(tmpFront);
+		m_ringBuffer->front = static_cast<uint32_t>(tmpFront);
 		m_ringBuffer->freeSpace = static_cast<uint32_t>(tmpFreeSpace);
 		messageLock.unlock();
 
 		if (m_ringBuffer->freeSpace == m_ringBuffer->buffer.size())
 		{
 			m_ringBuffer->front = 0u;
-			m_ringBuffer->next  = 0u;
+			m_ringBuffer->next = 0u;
 		}
 
 		--m_ringBuffer->messageCount;
@@ -122,7 +122,7 @@ public:
 	}
 
 private:
-	RingBuffer<S, A>*  m_ringBuffer;
+	RingBuffer<S, A>* m_ringBuffer;
 	mutable DekkarLock m_lock {m_ringBuffer->rxWaiting, m_ringBuffer->txWaiting, m_ringBuffer->turn};
 };
 

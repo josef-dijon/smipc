@@ -5,15 +5,16 @@
 
 class DuplexSharedMemoryFile;
 
-class Client {
+class Client
+{
 public:
-    Client();
-    ~Client();
+	Client();
+	~Client();
 
-    void run();
+	void run();
 
 private:
-    std::unique_ptr<DuplexSharedMemoryFile> m_sharedMemory {};
+	std::unique_ptr<DuplexSharedMemoryFile> m_sharedMemory {};
 };
 
-#endif // CLIENT_H_
+#endif  // CLIENT_H_

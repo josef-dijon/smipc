@@ -14,12 +14,12 @@ enum class MyEnum : uint16_t
 
 struct MyStruct
 {
-	uint32_t             a {};               // 4, 4
-	float                b {};               // 4, 4
-	MyEnum               c {};               // 2, 2
-	std::vector<uint8_t> d {1, 2, 3, 4};     // 4, 12
-	std::string          e {"hello world"};  // 4, 19
-											 // 18, 41
+	uint32_t a {};                        // 4, 4
+	float b {};                           // 4, 4
+	MyEnum c {};                          // 2, 2
+	std::vector<uint8_t> d {1, 2, 3, 4};  // 4, 12
+	std::string e {"hello world"};        // 4, 19
+										  // 18, 41
 };
 
 bool operator==(const MyStruct& a, const MyStruct& b)
@@ -31,7 +31,7 @@ std::vector<std::byte> toBytes(std::vector<int> v)
 {
 	std::vector<std::byte> bytes {};
 	std::for_each(v.begin(), v.end(), [&bytes](int i)
-		{ bytes.push_back(std::byte(i)); });
+				  { bytes.push_back(std::byte(i)); });
 	return bytes;
 }
 
@@ -140,8 +140,8 @@ TEST(serdes, size)
 
 TEST(serdes, serialise)
 {
-	const SerialisableMyStruct   x {};
-	const auto                   expectedBytes {toBytes({0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 1, 2, 3, 4, 11, 'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd'})};
+	const SerialisableMyStruct x {};
+	const auto expectedBytes {toBytes({0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 1, 2, 3, 4, 11, 'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd'})};
 	const std::vector<std::byte> bytes {x.serialise()};
 
 	EXPECT_EQ(bytes, expectedBytes);
@@ -149,7 +149,7 @@ TEST(serdes, serialise)
 
 TEST(serdes, deserialise)
 {
-	const auto           bytes {toBytes({0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 1, 2, 3, 4, 11, 'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd'})};
+	const auto bytes {toBytes({0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 1, 2, 3, 4, 11, 'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd'})};
 	SerialisableMyStruct x {};
 	x.deserialise(bytes);
 

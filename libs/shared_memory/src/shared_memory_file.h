@@ -29,8 +29,8 @@ private:
 	std::string m_name {};
 	std::size_t m_size {};
 
-	std::uintptr_t   m_handle {};
-	std::byte*       m_buffer {};
+	std::uintptr_t m_handle {};
+	std::byte* m_buffer {};
 	AtomicMemoryView m_view {};
 };
 

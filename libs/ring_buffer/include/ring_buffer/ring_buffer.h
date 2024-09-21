@@ -41,7 +41,7 @@ struct RingBuffer
 			: size {static_cast<uint32_t>(size_)}
 		{}
 		AtomicSpinLock lock {};
-		uint32_t       size {0u};
+		uint32_t size {0u};
 	};
 
 	std::atomic_bool rxWaiting {false};

@@ -56,8 +56,8 @@ void SharedMemoryFile::write(std::span<const std::byte> data)
 void SharedMemoryFile::openSharedMemoryFile()
 {
 	const std::string& name {getName()};
-	const uint32_t     low_size {static_cast<uint32_t>(getSize() & 0xFFFFFFFF)};
-	const uint32_t     high_size {static_cast<std::size_t>((getSize() >> 32) & 0xFFFFFFFF)};
+	const uint32_t low_size {static_cast<uint32_t>(getSize() & 0xFFFFFFFF)};
+	const uint32_t high_size {static_cast<std::size_t>((getSize() >> 32) & 0xFFFFFFFF)};
 	m_handle = reinterpret_cast<std::uintptr_t>(CreateFileMappingA(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, high_size, low_size, name.c_str()));
 
 	if (reinterpret_cast<HANDLE>(m_handle) == nullptr)
@@ -73,9 +73,9 @@ void SharedMemoryFile::openSharedMemoryFile()
 		throw std::runtime_error("Failed to map view of file");
 	}
 
-	m_view.lock        = reinterpret_cast<std::atomic_flag*>(m_buffer);
+	m_view.lock = reinterpret_cast<std::atomic_flag*>(m_buffer);
 	m_view.messageSize = reinterpret_cast<std::size_t*>(m_buffer + sizeof(std::atomic_flag));
-	m_view.data        = {m_buffer + sizeof(std::atomic_flag) + sizeof(std::size_t), getSize() - sizeof(std::atomic_flag) - sizeof(std::size_t)};
+	m_view.data = {m_buffer + sizeof(std::atomic_flag) + sizeof(std::size_t), getSize() - sizeof(std::atomic_flag) - sizeof(std::size_t)};
 }
 
 void SharedMemoryFile::closeSharedMemoryFile()

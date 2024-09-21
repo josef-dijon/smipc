@@ -41,7 +41,7 @@ public:
 		VariableInteger size {value.size()};
 		operator()(size);
 		std::for_each(std::begin(value), std::end(value), [this](auto& elem)
-			{ operator()(elem); });
+					  { operator()(elem); });
 	}
 
 	template <String T>
@@ -50,7 +50,7 @@ public:
 		VariableInteger size {value.length()};
 		operator()(size);
 		std::for_each(std::begin(value), std::end(value), [this](auto& elem)
-			{ operator()(elem); });
+					  { operator()(elem); });
 	}
 
 private:
@@ -65,7 +65,7 @@ private:
 		m_pointer += data.size();
 	}
 
-	std::size_t          m_pointer {0};
+	std::size_t m_pointer {0};
 	std::span<std::byte> m_data {};
 };
 

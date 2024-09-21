@@ -28,3 +28,7 @@ benchmark: test
 	@echo "Benchmarking..."
 	jq --argjson results "$(cat build/libs/serdes/test/benchmarks/results.json )" '."benchmark-runs" += [$results]' test/serdes_benchmark_history.json > build/tmp_serdes_benchmark_history.json
 	mv build/tmp_serdes_benchmark_history.json test/serdes_benchmark_history.json
+
+format:
+	@echo "Formatting..."
+	find libs -type f -name '*.h' -o -name '*.cpp' | xargs clang-format -i --verbose

@@ -15,7 +15,7 @@ static constexpr bool IsContinuationBitSet(std::byte b)
 
 static constexpr uint64_t ByteSwap(uint64_t value)
 {
-	const auto                bytes = std::bit_cast<std::array<std::byte, 8u>>(value);
+	const auto bytes = std::bit_cast<std::array<std::byte, 8u>>(value);
 	std::array<std::byte, 8u> swappedBytes {};
 
 	swappedBytes[0u] = bytes[7u];
@@ -43,7 +43,7 @@ public:
 
 		// Loop over the first 8 bytes
 		std::for_each(std::begin(m_bytes), std::end(m_bytes) - 1u, [this, value](std::byte& b) mutable
-			{
+					  {
 				// Take the bottom 7 bits of value then shift value down by 7 bits
 				b = static_cast<std::byte>(value & 0x7F);
 				value >>= 7u;
@@ -107,9 +107,11 @@ public:
 	}
 
 private:
-	uint64_t                  m_value {0u};
-	std::array<std::byte, 9u> m_bytes {{{}, {}, {}, {}, {}, {}, {}, {}, {}}};
-	std::size_t               m_count {1u};
+	uint64_t m_value {0u};
+	std::array<std::byte, 9u> m_bytes {
+		{{}, {}, {}, {}, {}, {}, {}, {}, {}}
+    };
+	std::size_t m_count {1u};
 };
 
 template <class T>

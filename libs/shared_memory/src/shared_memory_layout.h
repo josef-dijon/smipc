@@ -36,16 +36,16 @@ private:
 struct MessageHeader
 {
 	std::atomic_flag lock {};
-	uint32_t         message_size {};
+	uint32_t message_size {};
 };
 
 struct SharedMemoryHeader
 {
 	std::atomic_flag lock_;
-	uint32_t         first_message_offset_;
-	uint32_t         next_free_offset_;
-	uint32_t         message_count_;
-	uint32_t         free_space_;
+	uint32_t first_message_offset_;
+	uint32_t next_free_offset_;
+	uint32_t message_count_;
+	uint32_t free_space_;
 };
 
 template <std::size_t N>
@@ -66,7 +66,7 @@ public:
 	}
 
 protected:
-	SharedMemoryHeader                                    header_ {};
+	SharedMemoryHeader header_ {};
 	std::array<std::byte, N - sizeof(SharedMemoryHeader)> data_ {};
 };
 
@@ -112,20 +112,20 @@ public:
 
 		if (message_size > GetFreeSpaceBack())
 		{
-			const std::size_t                back_size {message_buffer_.size() - next_free_offset_};
-			const std::size_t                front_size {data_size - back_size};
+			const std::size_t back_size {message_buffer_.size() - next_free_offset_};
+			const std::size_t front_size {data_size - back_size};
 			const std::span<const std::byte> back_src_data {data.data(), back_size};
 			const std::span<const std::byte> front_src_data {data.data() + back_size, front_size};
-			std::span<std::byte>             back_dst_data {message_buffer_.data() + next_free_offset_, back_size};
-			std::span<std::byte>             front_dst_data {message_buffer_.data(), front_size};
+			std::span<std::byte> back_dst_data {message_buffer_.data() + next_free_offset_, back_size};
+			std::span<std::byte> front_dst_data {message_buffer_.data(), front_size};
 			std::copy(std::cbegin(back_src_data), std::cend(back_src_data), std::begin(back_dst_data));
 			std::copy(std::cbegin(front_src_data), std::cend(front_src_data), std::begin(front_dst_data));
 		}
 		else
 		{
-			const std::size_t                size {data.size()};
+			const std::size_t size {data.size()};
 			const std::span<const std::byte> src_data {data.data(), size};
-			std::span<std::byte>             dst_data {message_buffer_.data() + next_free_offset_, size};
+			std::span<std::byte> dst_data {message_buffer_.data() + next_free_offset_, size};
 			std::copy(std::cbegin(src_data), std::cend(src_data), std::begin(dst_data));
 		}
 	}
@@ -170,7 +170,7 @@ public:
 
 		std::fill_n(message_buffer_.begin() + next_free_offset_, sizeof(MessageHeader), std::byte {0});
 		MessageHeader* header = reinterpret_cast<MessageHeader*>(message_buffer_.data() + next_free_offset_);
-		header->message_size  = data_size;
+		header->message_size = data_size;
 		AtomicSpinLock message_lock header->lock;
 
 		next_free_offset_ += data_size;
@@ -181,20 +181,20 @@ public:
 
 		if (data.size() > message_buffer_.size() - next_free_offset_)
 		{
-			const std::size_t                back_size {message_buffer_.size() - next_free_offset_};
-			const std::size_t                front_size {data_size - back_size};
+			const std::size_t back_size {message_buffer_.size() - next_free_offset_};
+			const std::size_t front_size {data_size - back_size};
 			const std::span<const std::byte> back_src_data {data.data(), back_size};
 			const std::span<const std::byte> front_src_data {data.data() + back_size, front_size};
-			std::span<std::byte>             back_dst_data {message_buffer_.data() + next_free_offset_, back_size};
-			std::span<std::byte>             front_dst_data {message_buffer_.data(), front_size};
+			std::span<std::byte> back_dst_data {message_buffer_.data() + next_free_offset_, back_size};
+			std::span<std::byte> front_dst_data {message_buffer_.data(), front_size};
 			std::copy(std::cbegin(back_src_data), std::cend(back_src_data), std::begin(back_dst_data));
 			std::copy(std::cbegin(front_src_data), std::cend(front_src_data), std::begin(front_dst_data));
 		}
 		else if (data.size() <= message_buffer_.size() - next_free_offset_)
 		{
-			const std::size_t                size {data.size()};
+			const std::size_t size {data.size()};
 			const std::span<const std::byte> src_data {data.data(), size};
-			std::span<std::byte>             dst_data {message_buffer_.data() + next_free_offset_, size};
+			std::span<std::byte> dst_data {message_buffer_.data() + next_free_offset_, size};
 			std::copy(std::cbegin(src_data), std::cend(src_data), std::begin(dst_data));
 		}
 	}
@@ -213,10 +213,10 @@ public:
 
 private:
 	std::atomic_flag lock_;
-	uint32_t         first_message_offset_;
-	uint32_t         next_free_offset_;
-	uint32_t         message_count_;
-	uint32_t         free_space_;
+	uint32_t first_message_offset_;
+	uint32_t next_free_offset_;
+	uint32_t message_count_;
+	uint32_t free_space_;
 
 	std::array<std::byte, GetArraySize(N)> message_buffer_;
 };

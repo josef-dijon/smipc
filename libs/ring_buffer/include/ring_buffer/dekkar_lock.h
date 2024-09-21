@@ -12,12 +12,12 @@ public:
 		, m_turn {turn}
 	{}
 
-	DekkarLock()                             = delete;
-	~DekkarLock()                            = default;
-	DekkarLock(const DekkarLock&)            = delete;
+	DekkarLock() = delete;
+	~DekkarLock() = default;
+	DekkarLock(const DekkarLock&) = delete;
 	DekkarLock& operator=(const DekkarLock&) = delete;
-	DekkarLock(DekkarLock&&)                 = delete;
-	DekkarLock& operator=(DekkarLock&&)      = delete;
+	DekkarLock(DekkarLock&&) = delete;
+	DekkarLock& operator=(DekkarLock&&) = delete;
 
 	void lock() noexcept
 	{

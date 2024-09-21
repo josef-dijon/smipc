@@ -39,7 +39,7 @@ public:
 		m_size += size.size();
 
 		for_each(std::begin(value), std::end(value), [this](auto& elem)
-			{ operator()(elem); });
+				 { operator()(elem); });
 	}
 
 	template <String T>

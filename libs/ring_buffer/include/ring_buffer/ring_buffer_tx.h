@@ -43,13 +43,13 @@ public:
 		}
 
 		constexpr std::size_t headerSize {RingBuffer<S, A>::AlignedSize(sizeof(typename RingBuffer<S, A>::MessageHeader))};
-		const std::size_t     alignedSize {RingBuffer<S, A>::AlignedSize(size)};
+		const std::size_t alignedSize {RingBuffer<S, A>::AlignedSize(size)};
 
 		std::unique_lock lock(m_lock);
 
-		const std::size_t tmpFirst     = m_ringBuffer->front;
-		std::size_t       tmpNext      = m_ringBuffer->next;
-		std::size_t       tmpFreeSpace = m_ringBuffer->freeSpace;
+		const std::size_t tmpFirst = m_ringBuffer->front;
+		std::size_t tmpNext = m_ringBuffer->next;
+		std::size_t tmpFreeSpace = m_ringBuffer->freeSpace;
 
 		if (headerSize + size > m_ringBuffer->freeSpace)
 		{
@@ -84,7 +84,7 @@ public:
 			throw std::overflow_error("Buffer overflow");
 		}
 
-		auto*           messageHeader {new (m_ringBuffer->buffer.data() + headerStart) typename RingBuffer<S, A>::MessageHeader {size}};
+		auto* messageHeader {new (m_ringBuffer->buffer.data() + headerStart) typename RingBuffer<S, A>::MessageHeader {size}};
 		std::lock_guard messageLock(messageHeader->lock);
 
 		if (tmpNext + alignedSize < m_ringBuffer->buffer.size())
@@ -119,7 +119,7 @@ public:
 	}
 
 private:
-	RingBuffer<S, A>*  m_ringBuffer;
+	RingBuffer<S, A>* m_ringBuffer;
 	mutable DekkarLock m_lock {m_ringBuffer->txWaiting, m_ringBuffer->rxWaiting, m_ringBuffer->turn};
 };
 
