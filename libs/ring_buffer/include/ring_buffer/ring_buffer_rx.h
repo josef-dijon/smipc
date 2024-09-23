@@ -19,14 +19,14 @@ public:
 	{}
 
 	[[nodiscard]]
-	auto is_empty() const noexcept -> bool
+	auto isEmpty() const noexcept -> bool
 	{
 		std::lock_guard lock(m_lock);
 		return m_ringBuffer->freeSpace == m_ringBuffer->buffer.size();
 	}
 
 	[[nodiscard]]
-	auto get_message_count() const noexcept -> std::size_t
+	auto getMessageCount() const noexcept -> std::size_t
 	{
 		std::lock_guard lock(m_lock);
 		return m_ringBuffer->messageCount;
@@ -37,7 +37,7 @@ public:
 	{
 		constexpr std::size_t headerSize {RingBuffer<S, A>::AlignedSize(sizeof(typename RingBuffer<S, A>::MessageHeader))};
 
-		if (is_empty())
+		if (isEmpty())
 		{
 			return {};
 		}
@@ -53,6 +53,7 @@ public:
 		std::vector<uint8_t> data {};
 		data.reserve(size);
 
+		// Rewrite as header + data
 		if (tmpFront + headerSize < m_ringBuffer->buffer.size())
 		{
 			tmpFreeSpace += headerSize;

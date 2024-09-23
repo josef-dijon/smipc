@@ -19,7 +19,7 @@ public:
 	{}
 
 	[[nodiscard]]
-	auto is_full() const noexcept -> bool
+	auto isFull() const noexcept -> bool
 	{
 		std::lock_guard lock(m_lock);
 		return m_ringBuffer->freeSpace <= 0u;
@@ -30,92 +30,105 @@ public:
 		push(data.data(), data.size());
 	}
 
-	void push(const uint8_t* data, std::size_t size)
+	void push(const uint8_t* data, uint32_t size)
 	{
+		// If the data size is 0, there is nothing to do
 		if (size == 0)
 		{
 			return;
 		}
 
+		// If the data pointer is nullptr, throw
 		if (! data)
 		{
 			throw std::invalid_argument("Data is nullptr");
 		}
 
-		constexpr std::size_t headerSize {RingBuffer<S, A>::AlignedSize(sizeof(typename RingBuffer<S, A>::MessageHeader))};
-		const std::size_t alignedSize {RingBuffer<S, A>::AlignedSize(size)};
+		constexpr uint32_t ringBufferSize {RingBuffer<S, A>::BufferSize()};
+		constexpr uint32_t headerSize {RingBuffer<S, A>::AlignedSize(sizeof(typename RingBuffer<S, A>::MessageHeader))};
+		const uint32_t dataSize {size};
+		const uint32_t alignedDataSize {RingBuffer<S, A>::AlignedSize(size)};
 
+		// Read the buffer header data
+		uint32_t front {m_ringBuffer->header.front};
+		uint32_t next {m_ringBuffer->header.next};
+		uint32_t freeSpace {m_ringBuffer->header.freeSpace};
+		uint32_t messageCount {m_ringBuffer->header.messageCount};
+
+		// Header is guaranteed to fit at the next pointer position in the buffer, so only the data will ever need to wrap around
+
+		// Lock the buffer so we can read the header and update it
 		std::unique_lock lock(m_lock);
 
-		const std::size_t tmpFirst = m_ringBuffer->front;
-		std::size_t tmpNext = m_ringBuffer->next;
-		std::size_t tmpFreeSpace = m_ringBuffer->freeSpace;
-
-		if (headerSize + size > m_ringBuffer->freeSpace)
+		// Check if there is space for the header and the unaligned data, throw if not
+		if (headerSize + dataSize > freeSpace)
 		{
 			throw std::overflow_error("Buffer overflow");
 		}
 
-		if (tmpFirst <= tmpNext)
+		// At this point, we know the header and data will fit in the buffer, so we can calculate the start position
+		const uint32_t headerStart {next};
+
+		// Calculate the new next pointer and free space
+		next += headerSize;
+		freeSpace -= headerSize;
+
+		// Check if the data will wrap around the buffer
+		const bool wrapAround {(front <= next) && (next + dataSize > ringBufferSize)};
+
+		// Calculate the data start position
+		// Since the header is aligned, the data will always be aligned too
+		const uint32_t dataStart {next};
+
+		// Calculate the new next pointer and free space
+		// The next pointer needs to be aligned for the next message
+		next = RingBuffer<S, A>::AlignedSize((next + dataSize) % ringBufferSize);
+		freeSpace -= alignedDataSize;
+
+		// We can't let the next header split, so if it will wrap around, we need to adjust the next pointer
+		if (ringBufferSize - next < headerSize)
 		{
-			if (tmpNext + headerSize > m_ringBuffer->buffer.size())
+			// If there won't be room for the next header, we will consider the buffer full
+			if (freeSpace < headerSize)
 			{
-				tmpFreeSpace -= tmpNext + headerSize - m_ringBuffer->buffer.size();
-				tmpNext = 0u;
+				freeSpace = 0u;
+				next = front;
 			}
-			else if (tmpNext + headerSize == m_ringBuffer->buffer.size())
+			else
 			{
-				tmpNext = 0u;
+				freeSpace -= ringBufferSize - next;
+				next = 0u;
 			}
 		}
 
-		if (headerSize > tmpFreeSpace)
-		{
-			throw std::overflow_error("Buffer overflow");
-		}
+		// Increment the message count
+		++messageCount;
 
-		const std::size_t headerStart {tmpNext};
-
-		tmpNext += headerSize;
-		tmpFreeSpace -= headerSize;
-
-		if (alignedSize > tmpFreeSpace)
-		{
-			throw std::overflow_error("Buffer overflow");
-		}
-
-		auto* messageHeader {new (m_ringBuffer->buffer.data() + headerStart) typename RingBuffer<S, A>::MessageHeader {size}};
+		// Copy the header to the buffer and lock the data
+		auto* messageHeader = new (m_ringBuffer->data.data() + headerStart) typename RingBuffer<S, A>::MessageHeader {dataSize};
 		std::lock_guard messageLock(messageHeader->lock);
 
-		if (tmpNext + alignedSize < m_ringBuffer->buffer.size())
-		{
-			m_ringBuffer->next = static_cast<uint32_t>(tmpNext + alignedSize);
-		}
-		else if (tmpNext + size > m_ringBuffer->buffer.size())
-		{
-			m_ringBuffer->next = static_cast<uint32_t>(tmpNext + alignedSize - m_ringBuffer->buffer.size());
-		}
-		else
-		{
-			m_ringBuffer->next = 0u;
-		}
-
-		m_ringBuffer->freeSpace = static_cast<uint32_t>(tmpFreeSpace - alignedSize);
-
+		// Copy back the buffer header data and unlock the buffer
+		// Unlocking the buffer is safe because the message is locked
+		// This means readers can read other messages but not this one
+		m_ringBuffer->header.front = front;
+		m_ringBuffer->header.next = next;
+		m_ringBuffer->header.freeSpace = freeSpace;
+		m_ringBuffer->header.messageCount = messageCount;
 		lock.unlock();
 
-		if (tmpNext + size <= m_ringBuffer->buffer.size())
+		// Copy the data to the buffer, wrapping around if necessary
+		// The data lock will be unlocked when we reach the end of scope
+		if (wrapAround)
 		{
-			std::copy(data, data + size, m_ringBuffer->buffer.begin() + tmpNext);
+			const std::size_t part1Size = m_ringBuffer->data.size() - dataStart;
+			std::copy(data, data + part1Size, std::begin(m_ringBuffer->data) + dataStart);
+			std::copy(data + part1Size, data + dataSize, std::begin(m_ringBuffer->data));
 		}
 		else
 		{
-			const std::size_t part1Size = m_ringBuffer->buffer.size() - tmpNext;
-			std::copy(data, data + part1Size, m_ringBuffer->buffer.begin() + tmpNext);
-			std::copy(data + part1Size, data + size, m_ringBuffer->buffer.begin());
+			std::copy(data, data + dataSize, std::begin(m_ringBuffer->data) + dataStart);
 		}
-
-		++m_ringBuffer->messageCount;
 	}
 
 private:
