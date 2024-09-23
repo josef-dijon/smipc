@@ -5,12 +5,13 @@
 #include "ring_buffer.h"
 
 #include <algorithm>
+#include <cmath>
 #include <cstdint>
 #include <iterator>
 #include <mutex>
 #include <vector>
 
-template <std::size_t S, std::size_t A>
+template <uint32_t S, uint32_t A>
 class RingBufferRx
 {
 public:
@@ -19,111 +20,110 @@ public:
 	{}
 
 	[[nodiscard]]
-	auto is_empty() const noexcept -> bool
+	auto isEmpty() const noexcept -> bool
 	{
 		std::lock_guard lock(m_lock);
-		return m_ringBuffer->freeSpace == m_ringBuffer->buffer.size();
+		return m_ringBuffer->header.freeSpace == m_ringBuffer->data.size();
 	}
 
 	[[nodiscard]]
-	auto get_message_count() const noexcept -> std::size_t
+	auto getMessageCount() const noexcept -> uint32_t
 	{
 		std::lock_guard lock(m_lock);
-		return m_ringBuffer->messageCount;
+		return m_ringBuffer->header.messageCount;
 	}
 
 	[[nodiscard]]
 	auto pop() noexcept -> std::vector<uint8_t>
 	{
-		constexpr std::size_t headerSize {RingBuffer<S, A>::AlignedSize(sizeof(typename RingBuffer<S, A>::MessageHeader))};
-
-		if (is_empty())
+		if (isEmpty())
 		{
 			return {};
 		}
 
+		constexpr uint32_t headerSize {RingBuffer<S, A>::AlignedSize(sizeof(MessageHeader))};
+		constexpr uint32_t ringBufferSize {RingBuffer<S, A>::BufferSize()};
+
 		std::lock_guard lock(m_lock);
-		auto* messageHeader {reinterpret_cast<typename RingBuffer<S, A>::MessageHeader*>(m_ringBuffer->buffer.data() + m_ringBuffer->front)};
-		std::unique_lock messageLock(messageHeader->lock);
-		const std::size_t size {messageHeader->size};
-		const std::size_t alignedSize {RingBuffer<S, A>::AlignedSize(size)};
-		std::size_t tmpFront = m_ringBuffer->front;
-		std::size_t tmpFreeSpace = m_ringBuffer->freeSpace;
+		auto* messageHeader {reinterpret_cast<MessageHeader*>(m_ringBuffer->data.data() + m_ringBuffer->header.front)};
+		std::unique_lock messageLock {messageHeader->lock};
+
+		const uint32_t dataSize {messageHeader->size};
+		const uint32_t alignedDataSize {RingBuffer<S, A>::AlignedSize(dataSize)};
+
+		uint32_t front = m_ringBuffer->header.front;
+		uint32_t next = m_ringBuffer->header.next;
+		uint32_t freeSpace = m_ringBuffer->header.freeSpace;
+		uint32_t messageCount = m_ringBuffer->header.messageCount;
 
 		std::vector<uint8_t> data {};
-		data.reserve(size);
+		data.reserve(dataSize);
 
-		if (tmpFront + headerSize < m_ringBuffer->buffer.size())
-		{
-			tmpFreeSpace += headerSize;
-			tmpFront += headerSize;
-		}
-		else
-		{
-			tmpFreeSpace += m_ringBuffer->buffer.size() - tmpFront + headerSize;
-			tmpFront = 0u;
-		}
+		// Message header is guaranteed to not be split across the ring buffer
+		freeSpace += headerSize;
+		front = (front + headerSize) % ringBufferSize;
 
-		if (tmpFront + size <= m_ringBuffer->buffer.size())
+		const bool wrapAround {front + dataSize > ringBufferSize};
+
+		if (wrapAround)
 		{
-			std::copy_n(m_ringBuffer->buffer.cbegin() + tmpFront, size, std::back_inserter(data));
+			const uint32_t part1Size = ringBufferSize - front;
+			std::copy_n(std::cbegin(m_ringBuffer->data) + front, part1Size, std::back_inserter(data));
+			std::copy_n(std::cbegin(m_ringBuffer->data), dataSize - part1Size, std::back_inserter(data));
 
 			if constexpr (IsDebugBuild())
 			{
-				std::fill_n(m_ringBuffer->buffer.begin() + tmpFront, size, 0u);
+				std::fill_n(std::begin(m_ringBuffer->data) + front, part1Size, 0u);
+				std::fill_n(std::begin(m_ringBuffer->data), dataSize - part1Size, 0u);
 			}
 
-			if (tmpFront + size == m_ringBuffer->buffer.size())
-			{
-				tmpFront = 0u;
-				tmpFreeSpace += size;
-			}
-			else
-			{
-				tmpFront += alignedSize;
-				tmpFreeSpace += alignedSize;
-			}
+			freeSpace += part1Size;
+			front = (RingBuffer<S, A>::AlignedSize(dataSize - part1Size)) % ringBufferSize;
+			freeSpace += RingBuffer<S, A>::AlignedSize(dataSize - part1Size);
 		}
 		else
 		{
-			const std::size_t part1Size = m_ringBuffer->buffer.size() - tmpFront;
-			std::copy_n(m_ringBuffer->buffer.cbegin() + tmpFront, part1Size, std::back_inserter(data));
-			std::copy_n(m_ringBuffer->buffer.cbegin(), size - part1Size, std::back_inserter(data));
+			std::copy_n(std::cbegin(m_ringBuffer->data) + front, dataSize, std::back_inserter(data));
 
 			if constexpr (IsDebugBuild())
 			{
-				std::fill_n(m_ringBuffer->buffer.begin() + tmpFront, part1Size, 0u);
-				std::fill_n(m_ringBuffer->buffer.begin(), size - part1Size, 0u);
+				std::fill_n(std::begin(m_ringBuffer->data) + front, dataSize, 0u);
 			}
 
-			tmpFreeSpace += part1Size;
-			tmpFront = RingBuffer<S, A>::AlignedSize(size - part1Size);
-			tmpFreeSpace += RingBuffer<S, A>::AlignedSize(size - part1Size);
+			front = (front + alignedDataSize) % ringBufferSize;
+			freeSpace += alignedDataSize;
 		}
-
-		m_ringBuffer->front = static_cast<uint32_t>(tmpFront);
-		m_ringBuffer->freeSpace = static_cast<uint32_t>(tmpFreeSpace);
-		messageLock.unlock();
-
-		if (m_ringBuffer->freeSpace == m_ringBuffer->buffer.size())
-		{
-			m_ringBuffer->front = 0u;
-			m_ringBuffer->next = 0u;
-		}
-
-		--m_ringBuffer->messageCount;
 
 		if constexpr (IsDebugBuild())
 		{
 			messageHeader->size = 0;
 		}
 
+		messageLock.unlock();
+
+		if (front + headerSize > ringBufferSize)
+		{
+			freeSpace += ringBufferSize - front;
+			front = 0u;
+		}
+
+		if (freeSpace == ringBufferSize)
+		{
+			front = 0u;
+			next = 0u;
+		}
+
+		m_ringBuffer->header.front = front;
+		m_ringBuffer->header.freeSpace = freeSpace;
+		m_ringBuffer->header.next = next;
+		m_ringBuffer->header.messageCount = --messageCount;
+
 		return data;
 	}
 
 private:
 	RingBuffer<S, A>* m_ringBuffer;
-	mutable DekkarLock m_lock {m_ringBuffer->rxWaiting, m_ringBuffer->txWaiting, m_ringBuffer->turn};
+	mutable DekkarLock m_lock {m_ringBuffer->header.rxWaiting, m_ringBuffer->header.txWaiting, m_ringBuffer->header.turn};
 };
 
 #endif  // RING_BUFFER_RX_H_

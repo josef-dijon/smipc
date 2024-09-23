@@ -13,23 +13,9 @@ public:
 	AtomicSpinLock(AtomicSpinLock&&) = delete;
 	AtomicSpinLock& operator=(AtomicSpinLock&&) = delete;
 
-	void lock() noexcept
-	{
-		while (! try_lock())
-		{
-			;
-		}
-	}
-
-	void unlock() noexcept
-	{
-		m_lock.clear(std::memory_order_release);
-	}
-
-	bool try_lock() noexcept
-	{
-		return m_lock.test_and_set(std::memory_order_acquire);
-	}
+	void lock() noexcept;
+	void unlock() noexcept;
+	bool tryLock() noexcept;
 
 private:
 	std::atomic_flag m_lock = ATOMIC_FLAG_INIT;

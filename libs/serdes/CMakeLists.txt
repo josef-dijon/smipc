@@ -8,8 +8,14 @@ project("serdes")
 # Add source to this project's executable.
 add_library(serdes INTERFACE)
 
-target_include_directories(serdes INTERFACE include)
-target_include_directories(serdes INTERFACE src)
+target_include_directories(
+  serdes
+  PUBLIC
+  INTERFACE "include")
+target_include_directories(
+  serdes
+  PRIVATE
+  INTERFACE "src")
 
 set_property(TARGET serdes PROPERTY CXX_STANDARD 23)
 
