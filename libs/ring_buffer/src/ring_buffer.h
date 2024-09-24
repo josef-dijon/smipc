@@ -28,6 +28,19 @@ struct MessageHeader
 template <uint32_t S, uint32_t A>
 struct RingBuffer
 {
+	struct RingBufferHeader
+	{
+		std::atomic_bool rxWaiting {false};
+		std::atomic_bool txWaiting {false};
+		std::atomic_bool turn {false};
+		uint8_t padding_ {0u};
+
+		uint32_t front {0u};
+		uint32_t next {0u};
+		uint32_t freeSpace {static_cast<uint32_t>(BufferSize())};
+		uint32_t messageCount {0u};
+	};
+
 	static constexpr uint32_t AlignedSize(uint32_t size)
 	{
 		return size + ((A - (size % A)) % A);
@@ -43,19 +56,6 @@ struct RingBuffer
 	static_assert(A >= 4, "RingBuffer A template parameter is too small, must be >= 4");
 	static_assert((A & (A - 1)) == 0, "RingBuffer A template parameter is not power of 2");
 	static_assert((S & (S - 1)) == 0, "RingBuffer S template parameter is not power of 2");
-
-	struct RingBufferHeader
-	{
-		std::atomic_bool rxWaiting {false};
-		std::atomic_bool txWaiting {false};
-		std::atomic_bool turn {false};
-		uint8_t padding_ {0u};
-
-		uint32_t front {0u};
-		uint32_t next {0u};
-		uint32_t freeSpace {static_cast<uint32_t>(BufferSize())};
-		uint32_t messageCount {0u};
-	};
 
 	using RingBufferData = std::array<uint8_t, BufferSize()>;
 
