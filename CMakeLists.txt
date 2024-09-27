@@ -11,8 +11,8 @@ set(CMAKE_COLOR_DIAGNOSTICS ON)
 
 enable_testing()
 
-add_subdirectory("libs/shared_memory")
-# add_subdirectory("libs/client_test") add_subdirectory("libs/server_test")
-add_subdirectory("libs/ring_buffer")
-add_subdirectory("libs/serdes")
-add_subdirectory("libs/test_app")
+add_subdirectory("src")
+add_subdirectory("test/test-app")
+# add_subdirectory("test/client-test") add_subdirectory("test/server-test")
+add_subdirectory("test/unit-tests")
+add_subdirectory("test/benchmarks")

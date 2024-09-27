@@ -3,6 +3,8 @@ default: build
 clean:
 	@echo "Cleaning..."
 	rm -rf build
+	rm -rf vcpkg_installed
+	rm -f vcpkg-manifest-install.log
 
 cmake:
 	@echo "Configuring cmake..."
