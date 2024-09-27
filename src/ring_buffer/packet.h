@@ -1,4 +1,5 @@
-
+#ifndef PACKET_H_
+#define PACKET_H_
 
 #include <algorithm>
 #include <atomic>
@@ -76,3 +77,5 @@ private:
 	PacketHeader m_header;
 	std::span<const uint8_t> m_data;
 };
+
+#endif  // PACKET_H_
