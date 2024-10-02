@@ -1,0 +1,30 @@
+{
+    "service-description-version": 1,
+    "service": {
+        "name": "example",
+        "description": "An example service",
+        "datatype-imports": ["base"],
+        "datatypes": [
+            {
+                "name": "example",
+                "description": "An example datatype",
+                "members": [
+                    {
+                        "name": "example_member",
+                        "description": "An example member",
+                        "datatype": "base.string"
+                    }
+                ]
+            }
+        ],
+        "version": "0.0",
+        "endpoints": [
+            {
+                "name": "example",
+                "description": "An example endpoint",
+                "request": "example_request",
+                "response": "example_response"
+            }
+        ]
+    }
+}

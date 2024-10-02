@@ -1,0 +1,151 @@
+{
+    "type": "object",
+    "description": "root object",
+    "additionalProperties": false,
+    "properties": {
+        "service-description-version": {
+            "type": "integer",
+            "description": "version of this schema",
+            "minimum": 1
+        },
+        "service": {
+            "type": "object",
+            "description": "the main service object",
+            "additionalProperties": false,
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "name of the service",
+                    "minLength": 1,
+                    "pattern": "[a-z_]+"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "description of the service",
+                    "minLength": 1
+                },
+                "datatype-imports": {
+                    "type": "array",
+                    "description": "list of names of datatype definitions to import",
+                    "default": "[\"base\"]",
+                    "uniqueItems": true,
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "datatypes": {
+                    "type": "array",
+                    "description": "array of datatypes to be defined in this service",
+                    "uniqueItems": true,
+                    "minItems": 0,
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "name of the datatype",
+                                "minLength": 1,
+                                "pattern": "[a-z_]+"
+                            },
+                            "description": {
+                                "type": "string",
+                                "description": "description of the datatype, e.g. what it is used for",
+                                "minLength": 1
+                            },
+                            "members": {
+                                "type": "array",
+                                "description": "list of members used to compose this datatype",
+                                "uniqueItems": true,
+                                "minItems": 1,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "name of the member, this will end up being the class member name for this member",
+                                            "minLength": 1,
+                                            "pattern": "[a-z_]+"
+                                        },
+                                        "datatype": {
+                                            "type": "string",
+                                            "description": "datatype of this member. can be a datatype defined in this file, or one available in any of the imports",
+                                            "minLength": 1,
+                                            "pattern": "[a-z_]+"
+                                        }
+                                    },
+                                    "required": [
+                                        "name",
+                                        "datatype"
+                                    ]
+                                }
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "description",
+                            "members"
+                        ]
+                    }
+                },
+                "endpoints": {
+                    "type": "array",
+                    "description": "list of endpoints for this service",
+                    "uniqueItems": true,
+                    "minItems": 1,
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "name of the endpoint",
+                                "minLength": 1,
+                                "pattern": "[a-z_]+"
+                            },
+                            "description": {
+                                "type": "string",
+                                "description": "description of the endpoint",
+                                "minLength": 1
+                            },
+                            "request": {
+                                "type": "string",
+                                "description": "datatype to use in the request, this can be any existing individual datatype, or a composite datatype. If the request is omitted, the endpoint is an notification endpoint.",
+                                "minLength": 1,
+                                "pattern": "[a-z]+"
+                            },
+                            "response": {
+                                "type": "string",
+                                "description": "datatype to use in the response, this can be any existing individual datatype, or a composite datatype.",
+                                "minLength": 1,
+                                "pattern": "[a-z_]"
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "description"
+                        ]
+                    }
+                },
+                "version": {
+                    "type": "string",
+                    "description": "version of the service itself in the format <major>.<minor>",
+                    "minLength": 3,
+                    "pattern": "[0-9]\\.[0-9]",
+                    "default": "0.0"
+                }
+            },
+            "required": [
+                "name",
+                "description",
+                "datatype-imports",
+                "datatypes",
+                "endpoints",
+                "version"
+            ]
+        }
+    },
+    "required": [
+        "service-description-version",
+        "service"
+    ]
+}
