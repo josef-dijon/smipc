@@ -80,7 +80,7 @@ jobs:
         cppcheck: false
         clangtidy: false
         llvm: 19
-        gcc: 15
+        gcc: 14
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
