@@ -1,6 +1,5 @@
 # smipc
 [![CMake on multiple platforms](https://github.com/josef-dijon/smipc/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/josef-dijon/smipc/actions/workflows/cmake-multi-platform.yml)
-[![Benchmark tracking](https://github.com/josef-dijon/smipc/actions/workflows/benchmark.yml/badge.svg)](https://github.com/josef-dijon/smipc/actions/workflows/benchmark.yml)
 
 Shared memory IPC library
 
