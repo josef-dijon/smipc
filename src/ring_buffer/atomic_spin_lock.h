@@ -6,19 +6,12 @@
 class AtomicSpinLock
 {
 public:
-	AtomicSpinLock() = default;
-	~AtomicSpinLock() = default;
-	AtomicSpinLock(const AtomicSpinLock&) = delete;
-	AtomicSpinLock& operator=(const AtomicSpinLock&) = delete;
-	AtomicSpinLock(AtomicSpinLock&&) = delete;
-	AtomicSpinLock& operator=(AtomicSpinLock&&) = delete;
-
 	void lock() noexcept;
 	void unlock() noexcept;
 	bool tryLock() noexcept;
 
 private:
-	std::atomic_flag m_lock = ATOMIC_FLAG_INIT;
+	std::atomic_bool m_lock;
 };
 
 #endif  // ATOMIC_SPIN_LOCK_H_

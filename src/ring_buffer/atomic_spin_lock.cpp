@@ -1,5 +1,7 @@
 #include "atomic_spin_lock.h"
 
+#include <atomic>
+
 void AtomicSpinLock::lock() noexcept
 {
 	while (! tryLock())
@@ -10,10 +12,13 @@ void AtomicSpinLock::lock() noexcept
 
 void AtomicSpinLock::unlock() noexcept
 {
-	m_lock.clear(std::memory_order_release);
+	std::atomic_thread_fence(std::memory_order_release);
+	m_lock.store(false, std::memory_order_relaxed);
 }
 
 bool AtomicSpinLock::tryLock() noexcept
 {
-	return m_lock.test_and_set(std::memory_order_acquire);
+	bool x {m_lock.exchange(true, std::memory_order_relaxed)};
+	std::atomic_thread_fence(std::memory_order_acquire);
+	return x;
 }

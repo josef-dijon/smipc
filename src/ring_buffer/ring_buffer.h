@@ -16,16 +16,14 @@ static constexpr bool IsDebugBuild()
 #endif
 }
 
-struct MessageHeader
-{
-	MessageHeader(uint32_t size_)
-		: size {size_}
-	{}
-	AtomicSpinLock lock {};
-	uint32_t size {0u};
-};
+static constexpr std::size_t kAlignment {4u};
 
-template <uint32_t S, uint32_t A>
+static constexpr uint32_t AlignedSize(uint32_t size)
+{
+	return size + ((kAlignment - (size % kAlignment)) % kAlignment);
+}
+
+template <uint32_t TSize>
 struct RingBuffer
 {
 	struct RingBufferHeader
@@ -37,27 +35,18 @@ struct RingBuffer
 
 		uint32_t front {0u};
 		uint32_t next {0u};
-		uint32_t freeSpace {static_cast<uint32_t>(BufferSize())};
+		uint32_t freeSpace {static_cast<uint32_t>(kBufferSize)};
 		uint32_t messageCount {0u};
 	};
 
-	static constexpr uint32_t AlignedSize(uint32_t size)
-	{
-		return size + ((A - (size % A)) % A);
-	}
+	static constexpr uint32_t kBufferSize {TSize - sizeof(RingBufferHeader)};
 
-	static constexpr uint32_t BufferSize()
-	{
-		return AlignedSize(S) - sizeof(RingBufferHeader);
-	}
+	static_assert(TSize > kBufferSize, "RingBuffer TSize template parameter is too small");
+	static_assert(TSize <= 2048u * 1024u * 1024u, "RingBuffer TSize template parameter is too large, must be less than 2GB");
+	static_assert((TSize & (TSize - 1u)) == 0u, "RingBuffer TSIze template parameter is not power of 2");
+	static_assert(TSize % kAlignment == 0u, "RingBuffer TSize template parameter is not 4 byte aligned");
 
-	static_assert(S > BufferSize(), "RingBuffer S template parameter is too small");
-	static_assert(S <= 2048u * 1024u * 1024u, "RingBuffer S template parameter is too large, must be less than 2GB");
-	static_assert(A >= 4, "RingBuffer A template parameter is too small, must be >= 4");
-	static_assert((A & (A - 1)) == 0, "RingBuffer A template parameter is not power of 2");
-	static_assert((S & (S - 1)) == 0, "RingBuffer S template parameter is not power of 2");
-
-	using RingBufferData = std::array<uint8_t, BufferSize()>;
+	using RingBufferData = std::array<uint8_t, kBufferSize>;
 
 	RingBufferHeader header {};
 	RingBufferData data {};
