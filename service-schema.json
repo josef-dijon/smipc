@@ -118,6 +118,11 @@
                                 "description": "datatype to use in the response, this can be any existing individual datatype, or a composite datatype.",
                                 "minLength": 1,
                                 "pattern": "[a-z_]"
+                            },
+                            "deprecated": {
+                                "type": "boolean",
+                                "description": "flag to indicate if this endpoint is deprecated",
+                                "default": false
                             }
                         },
                         "required": [
