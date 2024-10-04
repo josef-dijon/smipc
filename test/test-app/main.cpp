@@ -10,7 +10,6 @@ int main()
 	RingBufferTx<128u> tx {buffer};
 
 	Packet packet {
-		{},
 		std::vector<uint8_t> {1u, 2u, 3u, 4u, 5u}
     };
 

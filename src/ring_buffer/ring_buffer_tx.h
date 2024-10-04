@@ -36,19 +36,18 @@ public:
 		}
 
 		constexpr uint32_t ringBufferSize {RingBuffer<TSize>::kBufferSize};
-		const uint32_t headerSize {sizeof(PacketHeader)};
+		const uint32_t headerSize {static_cast<uint32_t>(sizeof(PacketHeader))};
 		const uint32_t dataSize {static_cast<uint32_t>(packet.data.size())};
 		const uint32_t alignedDataSize {AlignedSize(dataSize)};
-		const uint32_t packetSize {static_cast<uint32_t>(sizeof(PacketHeader) + alignedDataSize)};
+		const uint32_t packetSize {headerSize + alignedDataSize};
+
+		std::lock_guard lock(m_lock);
 
 		// Read the buffer header data
 		uint32_t front {m_ringBuffer->header.front};
 		uint32_t next {m_ringBuffer->header.next};
 		uint32_t freeSpace {m_ringBuffer->header.freeSpace};
 		uint32_t messageCount {m_ringBuffer->header.messageCount};
-
-		// Lock the buffer so we can read the header and update it
-		std::lock_guard lock(m_lock);
 
 		// Check if there is space for the header and the unaligned data, throw if not
 		if (packetSize > freeSpace)
@@ -57,14 +56,14 @@ public:
 		}
 
 		const uint32_t headerStart {next};
-		const bool headerWrap {(front <= next) && (next + headerSize > ringBufferSize)};
+		const bool headerWrap {(front <= next) && (headerStart + headerSize > ringBufferSize)};
 		next = (next + headerSize) % ringBufferSize;
 		freeSpace -= headerSize;
 
 		const uint32_t dataStart {next};
-		const bool dataWrap {(front <= next) && (next + dataSize > ringBufferSize)};
-		next = (next + dataSize) % ringBufferSize;
-		freeSpace -= dataSize;
+		const bool dataWrap {(front <= next) && (dataStart + dataSize > ringBufferSize)};
+		next = (next + alignedDataSize) % ringBufferSize;
+		freeSpace -= alignedDataSize;
 
 		++messageCount;
 
@@ -78,7 +77,7 @@ public:
 
 		if (headerWrap)
 		{
-			const std::size_t part1Size = m_ringBuffer->data.size() - headerStart;
+			const std::size_t part1Size = ringBufferSize - headerStart;
 			std::copy_n(reinterpret_cast<const uint8_t*>(&packet.header), part1Size, std::begin(m_ringBuffer->data) + headerStart);
 			std::copy_n(reinterpret_cast<const uint8_t*>(&packet.header) + part1Size, headerSize - part1Size, std::begin(m_ringBuffer->data));
 		}
@@ -89,7 +88,7 @@ public:
 
 		if (dataWrap)
 		{
-			const std::size_t part1Size = m_ringBuffer->data.size() - dataStart;
+			const std::size_t part1Size = ringBufferSize - dataStart;
 			std::copy_n(std::begin(packet.data), part1Size, std::begin(m_ringBuffer->data) + dataStart);
 			std::copy_n(std::begin(packet.data) + part1Size, dataSize - part1Size, std::begin(m_ringBuffer->data));
 		}

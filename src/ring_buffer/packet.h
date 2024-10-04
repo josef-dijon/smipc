@@ -8,6 +8,7 @@
 #include <atomic>
 #include <cstdint>
 #include <iostream>
+#include <sys/types.h>
 #include <vector>
 
 static uint32_t MakeTransferId()
@@ -22,11 +23,20 @@ struct PacketHeader
 	uint32_t size {};
 	uint32_t packetId {};
 	uint32_t packetCount {};
-	uint32_t transferId {MakeTransferId()};
+	uint32_t transferId {};
 };
 
 struct Packet
 {
+	Packet() = default;
+
+	Packet(std::span<const uint8_t> data)
+		: header {0, static_cast<uint32_t>(data.size()), 0, 0, MakeTransferId()}
+	{
+		this->data.reserve(data.size());
+		std::copy(data.begin(), data.end(), std::back_inserter(this->data));
+	}
+
 	void print() const
 	{
 		std::cout << fmt::format("  Size: {}\n  PacketId: {}\n  PacketCount: {}\n  TransferId: {}\n  Checksum: {}\n", header.size, header.packetId, header.packetCount, header.transferId, header.checksum);

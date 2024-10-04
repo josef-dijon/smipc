@@ -53,7 +53,7 @@ public:
 		uint32_t messageCount {m_ringBuffer->header.messageCount};
 
 		const uint32_t headerStart {front};
-		const bool headerWrap {front + headerSize > m_ringBuffer->data.size()};
+		const bool headerWrap {front + headerSize > ringBufferSize};
 		front = (front + headerSize) % ringBufferSize;
 		freeSpace += headerSize;
 
@@ -84,8 +84,8 @@ public:
 		const uint32_t dataSize {packet.header.size};
 		const uint32_t alignedDataSize {AlignedSize(dataSize)};
 		const uint32_t dataStart {front};
-		const bool dataWrap {front + dataSize > m_ringBuffer->data.size()};
-		front = (front + alignedDataSize) % m_ringBuffer->data.size();
+		const bool dataWrap {front + dataSize > ringBufferSize};
+		front = (front + alignedDataSize) % ringBufferSize;
 		freeSpace += alignedDataSize;
 
 		packet.data.reserve(dataSize);
