@@ -39,10 +39,10 @@ jobs:
             compiler: clang-19
             build_type: Release
           - os: ubuntu-latest
-            compiler: gcc-14.2
+            compiler: gcc-13
             build_type: Debug
           - os: ubuntu-latest
-            compiler: gcc-14.2
+            compiler: gcc-13
             build_type: Release
           - os: windows-latest
             compiler: cl
