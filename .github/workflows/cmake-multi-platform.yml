@@ -32,10 +32,10 @@ jobs:
       # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the build_type list.
       matrix:
         include:
-          #- os: ubuntu-latest
-          #  c_compiler: clang-19
-          #  cpp_compiler: clang++-19
-          #  build_type: Debug
+          - os: ubuntu-latest
+            c_compiler: clang-19
+            cpp_compiler: clang++-19
+            build_type: Debug
           - os: ubuntu-latest
             compiler: clang-19
             build_type: Release
