@@ -1,13 +1,13 @@
 #ifndef PACKET_H_
 #define PACKET_H_
 
-#include "atomic_spin_lock.h"
 #include "fmt/core.h"
 
 #include <algorithm>
 #include <atomic>
 #include <cstdint>
 #include <iostream>
+#include <span>
 #include <sys/types.h>
 #include <vector>
 
