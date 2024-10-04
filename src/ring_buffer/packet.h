@@ -2,11 +2,11 @@
 #define PACKET_H_
 
 #include "atomic_spin_lock.h"
+#include "fmt/core.h"
 
 #include <algorithm>
 #include <atomic>
 #include <cstdint>
-#include <format>
 #include <iostream>
 #include <vector>
 
@@ -29,11 +29,11 @@ struct Packet
 {
 	void print() const
 	{
-		std::cout << std::format("  Size: {}\n  PacketId: {}\n  PacketCount: {}\n  TransferId: {}\n  Checksum: {}\n", header.size, header.packetId, header.packetCount, header.transferId, header.checksum);
+		std::cout << fmt::format("  Size: {}\n  PacketId: {}\n  PacketCount: {}\n  TransferId: {}\n  Checksum: {}\n", header.size, header.packetId, header.packetCount, header.transferId, header.checksum);
 		std::cout << "  Data: ";
 		for (const auto& byte : data)
 		{
-			std::cout << std::format("{:02X} ", byte);
+			std::cout << fmt::format("{:02X} ", byte);
 		}
 		std::cout << std::endl;
 	}

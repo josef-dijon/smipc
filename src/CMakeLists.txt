@@ -2,6 +2,8 @@
 
 project("smipc")
 
+find_package(fmt CONFIG REQUIRED)
+
 add_library(
   smipc STATIC
   "${CMAKE_CURRENT_SOURCE_DIR}/ring_buffer/dekkar_lock.cpp"
@@ -12,6 +14,8 @@ add_library(
   # "${CMAKE_CURRENT_SOURCE_DIR}/shared_memory/client.cpp"
   # "${CMAKE_CURRENT_SOURCE_DIR}/shared_memory/server.cpp"
 )
+
+target_link_libraries(smipc PUBLIC fmt::fmt)
 
 target_include_directories(smipc PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
