@@ -22,8 +22,6 @@
 
 cmake_minimum_required(VERSION 3.28)
 
-project("smipc")
-
 find_package(fmt CONFIG REQUIRED)
 find_package(GTest CONFIG REQUIRED)
 find_package(benchmark CONFIG REQUIRED)

@@ -2,6 +2,7 @@
   "dependencies": [
     "gtest",
     "benchmark",
-	"fmt"
+	"fmt",
+	"nlohmann-json"
   ]
 }

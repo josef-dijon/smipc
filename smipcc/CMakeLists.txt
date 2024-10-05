@@ -20,20 +20,19 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-cmake_minimum_required(VERSION 3.27)
-
-set(CMAKE_TOOLCHAIN_FILE
-    "${CMAKE_SOURCE_DIR}/external/vcpkg/scripts/buildsystems/vcpkg.cmake"
-    CACHE STRING "")
+cmake_minimum_required(VERSION 3.28)
 
 project("smipc")
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_COLOR_DIAGNOSTICS ON)
+find_package(fmt CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
 
-enable_testing()
+add_executable(smipcc "${CMAKE_CURRENT_SOURCE_DIR}/smipcc/main.cpp")
 
-add_subdirectory("libsmipc")
-add_subdirectory("tests/test-app")
-add_subdirectory("smipcc")
-# add_subdirectory("test/client-test") add_subdirectory("test/server-test")
+target_link_libraries(smipcc PUBLIC smipc)
+target_link_libraries(smipcc PUBLIC fmt::fmt)
+target_link_libraries(smipcc PUBLIC nlohmann_json::nlohmann_json)
+
+target_include_directories(smipcc PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+
+set_property(TARGET smipcc PROPERTY CXX_STANDARD 23)

@@ -1,87 +1,87 @@
 {
-    "type": "object",
-    "properties": {
-        "datatype-schema-version": {
-            "type": "integer",
-            "description": "version of the datatype schema used",
-            "minimum": 1
-        },
-        "datatype-imports": {
-            "type": "array",
-            "description": "list of datatypes to import",
-            "uniqueItems": true,
-            "items": {
-                "type": "string"
-            }
-        },
-        "datatype": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string",
-                    "description": "name of the datatype",
-                    "minLength": 1,
-                    "pattern": "[a-z_]+"
-                },
-                "description": {
-                    "type": "string",
-                    "description": "description of the datatype",
-                    "minLength": 1
-                },
-                "members": {
-                    "type": "array",
-                    "description": "datatypes that compose this datatype",
-                    "uniqueItems": true,
-                    "minItems": 1,
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "name": {
-                                "type": "string",
-                                "description": "name of the data member",
-                                "minLength": 1,
-                                "pattern": "[0-9_]+"
-                            },
-                            "description": {
-                                "type": "string",
-                                "description": "description of the data member",
-                                "minLength": 1
-                            },
-                            "datatype": {
-                                "type": "string",
-                                "description": "datatype of this member",
-                                "minLength": 1,
-                                "pattern": "[0-9]_"
-                            },
-                            "array": {
-                                "type": "boolean",
-                                "description": "flag to indicate that this member is an array"
-                            },
-                            "optional": {
-                                "type": "boolean",
-                                "description": "flag to indicate if this member is optional"
-                            }
-                        },
-                        "required": [
-                            "name",
-                            "description",
-                            "datatype",
-                            "array",
-                            "optional"
-                        ]
-                    }
-                }
-            },
-            "required": [
-                "name",
-                "description",
-                "members"
-            ]
-        }
-    },
-    "required": [
-        "datatype",
-        "datatype-imports",
-        "datatype-schema-version"
-    ]
+	"type": "object",
+	"properties": {
+		"datatype-schema-version": {
+			"type": "integer",
+			"description": "version of the datatype schema used",
+			"minimum": 1
+		},
+		"datatype-imports": {
+			"type": "array",
+			"description": "list of datatypes to import",
+			"uniqueItems": true,
+			"items": {
+				"type": "string"
+			}
+		},
+		"datatype": {
+			"type": "object",
+			"properties": {
+				"name": {
+					"type": "string",
+					"description": "name of the datatype",
+					"minLength": 1,
+					"pattern": "[a-z_]+"
+				},
+				"description": {
+					"type": "string",
+					"description": "description of the datatype",
+					"minLength": 1
+				},
+				"members": {
+					"type": "array",
+					"description": "datatypes that compose this datatype",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "object",
+						"properties": {
+							"name": {
+								"type": "string",
+								"description": "name of the data member",
+								"minLength": 1,
+								"pattern": "[0-9_]+"
+							},
+							"description": {
+								"type": "string",
+								"description": "description of the data member",
+								"minLength": 1
+							},
+							"datatype": {
+								"type": "string",
+								"description": "datatype of this member",
+								"minLength": 1,
+								"pattern": "[0-9]_"
+							},
+							"array": {
+								"type": "boolean",
+								"description": "flag to indicate that this member is an array"
+							},
+							"optional": {
+								"type": "boolean",
+								"description": "flag to indicate if this member is optional"
+							}
+						},
+						"required": [
+							"name",
+							"description",
+							"datatype",
+							"array",
+							"optional"
+						]
+					}
+				}
+			},
+			"required": [
+				"name",
+				"description",
+				"members"
+			]
+		}
+	},
+	"required": [
+		"datatype",
+		"datatype-imports",
+		"datatype-schema-version"
+	]
 }
