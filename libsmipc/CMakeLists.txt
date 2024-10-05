@@ -28,7 +28,7 @@ add_executable(serdes-unit-test
 target_link_libraries(serdes-unit-test PRIVATE smipc)
 target_link_libraries(serdes-unit-test PRIVATE GTest::gtest)
 set_property(TARGET serdes-unit-test PROPERTY CXX_STANDARD 23)
-add_test(NAME serdes-unit-test COMMAND serdes-unit-tests --gtest_color=1)
+add_test(NAME serdes-unit-test COMMAND serdes-unit-test --gtest_color=1)
 
 add_executable(
   ring-buffer-unit-test
@@ -36,7 +36,7 @@ add_executable(
 target_link_libraries(ring-buffer-unit-test PRIVATE smipc)
 target_link_libraries(ring-buffer-unit-test PRIVATE GTest::gtest)
 set_property(TARGET ring-buffer-unit-test PROPERTY CXX_STANDARD 23)
-add_test(NAME ring-buffer-unit-test COMMAND ring-buffer-unit-tests
+add_test(NAME ring-buffer-unit-test COMMAND ring-buffer-unit-test
                                             --gtest_color=1)
 
 add_executable(
