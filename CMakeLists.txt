@@ -11,8 +11,6 @@ set(CMAKE_COLOR_DIAGNOSTICS ON)
 
 enable_testing()
 
-add_subdirectory("src")
-add_subdirectory("test/test-app")
+add_subdirectory("libsmipc")
+add_subdirectory("tests/test-app")
 # add_subdirectory("test/client-test") add_subdirectory("test/server-test")
-add_subdirectory("test/unit-tests")
-add_subdirectory("test/benchmarks")

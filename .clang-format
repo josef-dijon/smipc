@@ -69,24 +69,19 @@ DisableFormat: false
 ExperimentalAutoDetectBinPacking: false
 FixNamespaceComments: true
 IncludeBlocks: Regroup
+IncludeIsMainSourceRegex: '$?'
 IncludeCategories:
-  - Regex: '^[<"]glad.*'
-    Priority: 2
-    SortPriority: 1
-  - Regex: '^[<"]GLFW.*'
-    Priority: 2
-    SortPriority: 2
-  - Regex: '^<ft2build.*'
-    Priority: 3
-    SortPriority: 1
-  - Regex: 'FT_.*'
-    Priority: 3
-    SortPriority: 2
-  - Regex: '^".*'
+  - Regex: '^"'
     Priority: 1
-  - Regex: '^<.*'
+  - Regex: '^<.+.hpp>'
+    Priority: 2
+  - Regex: '^<.+.h>'
+    Priority: 3
+  - Regex: '^<[^.]+'
     Priority: 4
-IncludeIsMainRegex: '(Test)?$'
+  - Regex: '^<windows.h'
+    Priority: 5
+IncludeIsMainRegex: '(.test)?$'
 IndentCaseBlocks: true
 IndentCaseLabels: true
 IndentExternBlock: NoIndent
