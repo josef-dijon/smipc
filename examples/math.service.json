@@ -1,0 +1,71 @@
+{
+	"service-description-version": 1,
+	"service": {
+		"version": "0.0",
+		"name": "math",
+		"description": "An example math service",
+		"datatypes": [],
+		"endpoints": [
+			{
+				"name": "sum",
+				"description": "An endpoint that calculates the sum of two numbers",
+				"request": {
+					"description": "An sum request structure",
+					"fields": [
+						{
+							"name": "a",
+							"description": "The first number to sum",
+							"datatype": "base.i64"
+						},
+						{
+							"name": "b",
+							"description": "The second number to sum",
+							"datatype": "base.i64"
+						}
+					]
+				},
+				"response": {
+					"description": "A sum response structure",
+					"fields": [
+						{
+							"name": "c",
+							"description": "The sum of the two numbers",
+							"datatype": "base.i64"
+						}
+					]
+				}
+			},
+			{
+				"name": "difference",
+				"description": "An endpoint that calculates the difference between two numbers",
+				"request": {
+					"name": "difference_request",
+					"description": "A difference request structure",
+					"fields": [
+						{
+							"name": "a",
+							"description": "The first number to difference",
+							"datatype": "base.i64"
+						},
+						{
+							"name": "b",
+							"description": "The second number to difference",
+							"datatype": "base.i64"
+						}
+					]
+				},
+				"response": {
+					"name": "difference_response",
+					"description": "A difference response structure",
+					"fields": [
+						{
+							"name": "c",
+							"description": "The difference between the two numbers",
+							"datatype": "base.i64"
+						}
+					]
+				}
+			}
+		]
+	}
+}

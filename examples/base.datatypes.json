@@ -1,0 +1,65 @@
+{
+	"datatype-import-schema-version": 1,
+	"datatypes": [
+		{
+			"name": "i8",
+			"description": "An 8-bit signed integer",
+			"fields": []
+		},
+		{
+			"name": "i16",
+			"description": "A 16-bit signed integer",
+			"fields": []
+		},
+		{
+			"name": "i32",
+			"description": "A 32-bit signed integer",
+			"fields": []
+		},
+		{
+			"name": "i64",
+			"description": "A 64-bit signed integer",
+			"fields": []
+		},
+		{
+			"name": "u8",
+			"description": "An 8-bit unsigned integer",
+			"fields": []
+		},
+		{
+			"name": "u16",
+			"description": "A 16-bit unsigned integer",
+			"fields": []
+		},
+		{
+			"name": "u32",
+			"description": "A 32-bit unsigned integer",
+			"fields": []
+		},
+		{
+			"name": "u64",
+			"description": "A 64-bit unsigned integer",
+			"fields": []
+		},
+		{
+			"name": "f32",
+			"description": "A 32-bit floating point number",
+			"fields": []
+		},
+		{
+			"name": "f64",
+			"description": "A 64-bit floating point number",
+			"fields": []
+		},
+		{
+			"name": "string",
+			"description": "A string of characters",
+			"fields": []
+		},
+		{
+			"name": "bool",
+			"description": "A boolean value",
+			"fields": []
+		},
+	]
+}

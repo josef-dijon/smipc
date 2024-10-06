@@ -1,9 +1,9 @@
 {
 	"type": "object",
 	"properties": {
-		"datatype-schema-version": {
+		"datatype-import-schema-version": {
 			"type": "integer",
-			"description": "version of the datatype schema used",
+			"description": "version of the datatype import schema used",
 			"minimum": 1
 		},
 		"datatype-imports": {
@@ -28,7 +28,7 @@
 					"description": "description of the datatype",
 					"minLength": 1
 				},
-				"members": {
+				"fields": {
 					"type": "array",
 					"description": "datatypes that compose this datatype",
 					"uniqueItems": true,
@@ -66,8 +66,6 @@
 							"name",
 							"description",
 							"datatype",
-							"array",
-							"optional"
 						]
 					}
 				}
@@ -75,13 +73,12 @@
 			"required": [
 				"name",
 				"description",
-				"members"
+				"fields"
 			]
 		}
 	},
 	"required": [
 		"datatype",
-		"datatype-imports",
 		"datatype-schema-version"
 	]
 }

@@ -13,6 +13,13 @@
 			"description": "the main service object",
 			"additionalProperties": false,
 			"properties": {
+				"version": {
+					"type": "string",
+					"description": "version of the service itself in the format <major>.<minor>",
+					"minLength": 3,
+					"pattern": "[0-9]\\.[0-9]",
+					"default": "0.0"
+				},
 				"name": {
 					"type": "string",
 					"description": "name of the service",
@@ -23,16 +30,6 @@
 					"type": "string",
 					"description": "description of the service",
 					"minLength": 1
-				},
-				"datatype-imports": {
-					"type": "array",
-					"description": "list of names of datatype definitions to import",
-					"default": "[\"base\"]",
-					"uniqueItems": true,
-					"minItems": 1,
-					"items": {
-						"type": "string"
-					}
 				},
 				"datatypes": {
 					"type": "array",
@@ -53,7 +50,7 @@
 								"description": "description of the datatype, e.g. what it is used for",
 								"minLength": 1
 							},
-							"members": {
+							"fields": {
 								"type": "array",
 								"description": "list of members used to compose this datatype",
 								"uniqueItems": true,
@@ -84,7 +81,7 @@
 						"required": [
 							"name",
 							"description",
-							"members"
+							"fields"
 						]
 					}
 				},
@@ -130,22 +127,14 @@
 							"description"
 						]
 					}
-				},
-				"version": {
-					"type": "string",
-					"description": "version of the service itself in the format <major>.<minor>",
-					"minLength": 3,
-					"pattern": "[0-9]\\.[0-9]",
-					"default": "0.0"
 				}
 			},
 			"required": [
+				"version",
 				"name",
 				"description",
-				"datatype-imports",
 				"datatypes",
-				"endpoints",
-				"version"
+				"endpoints"
 			]
 		}
 	},
