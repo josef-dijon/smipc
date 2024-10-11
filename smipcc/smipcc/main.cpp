@@ -21,6 +21,15 @@ struct Field
 		, isArray {json.contains("array") && json.at("array").get<bool>()}
 	{}
 
+	void print() const
+	{
+		std::cout << "          " << name << std::endl;
+		std::cout << "            Description: " << description << std::endl;
+		std::cout << "            Datatype: " << datatype << std::endl;
+		std::cout << "            Optional: " << isOptional << std::endl;
+		std::cout << "            Array: " << isArray << std::endl;
+	}
+
 	std::string name {};
 	std::string description {};
 	std::string datatype {};
@@ -39,6 +48,17 @@ struct Datatype
 		for (const auto& field : jsonFields)
 		{
 			fields.emplace_back(field);
+		}
+	}
+
+	void print() const
+	{
+		std::cout << "    " << name << std::endl;
+		std::cout << "      Description: " << description << std::endl;
+		std::cout << "      Fields: " << std::endl;
+		for (const auto& field : fields)
+		{
+			field.print();
 		}
 	}
 
@@ -75,6 +95,26 @@ struct Endpoint
 		, response {json.at("response")}
 	{}
 
+	void print() const
+	{
+		std::cout << "    " << name << std::endl;
+		std::cout << "      Description: " << description << std::endl;
+		std::cout << "      Request: " << std::endl;
+		std::cout << "        Description: " << request.description << std::endl;
+		std::cout << "        Fields: " << std::endl;
+		for (const auto& field : request.fields)
+		{
+			field.print();
+		}
+		std::cout << "      Response: " << std::endl;
+		std::cout << "        Description: " << response.description << std::endl;
+		std::cout << "        Fields: " << std::endl;
+		for (const auto& field : response.fields)
+		{
+			field.print();
+		}
+	}
+
 	std::string name;
 	std::string description;
 	Request request;
@@ -100,6 +140,24 @@ struct Service
 		for (const auto& endpoint : jsonEndpoints)
 		{
 			endpoints.emplace_back(endpoint);
+		}
+	}
+
+	void print()
+	{
+		std::cout << "Service: " << name << std::endl;
+		std::cout << "  Version: " << version << std::endl;
+		std::cout << "  Name: " << name << std::endl;
+		std::cout << "  Description: " << description << std::endl;
+		std::cout << "  Datatypes: " << std::endl;
+		for (const auto& datatype : datatypes)
+		{
+			datatype.print();
+		}
+		std::cout << "  Endpoints: " << std::endl;
+		for (const auto& endpoint : endpoints)
+		{
+			endpoint.print();
 		}
 	}
 
@@ -135,55 +193,7 @@ int main()
 	std::cout << "Service description version: " << serviceDescriptionVersion << std::endl;
 
 	Service service {json.at("service")};
-
-	std::cout << "Service: " << service.name << std::endl;
-	std::cout << "  Version: " << service.version << std::endl;
-	std::cout << "  Name: " << service.name << std::endl;
-	std::cout << "  Description: " << service.description << std::endl;
-	std::cout << "  Datatypes: " << std::endl;
-	for (const auto& datatype : service.datatypes)
-	{
-		std::cout << "    " << datatype.name << std::endl;
-		std::cout << "      Description: " << datatype.description << std::endl;
-		std::cout << "      Fields: " << std::endl;
-		for (const auto& field : datatype.fields)
-		{
-			std::cout << "        " << field.name << std::endl;
-			std::cout << "          Description: " << field.description << std::endl;
-			std::cout << "          Datatype: " << field.datatype << std::endl;
-			std::cout << "          Optional: " << field.isOptional << std::endl;
-			std::cout << "          Array: " << field.isArray << std::endl;
-		}
-	}
-	std::cout << "  Endpoints: " << std::endl;
-	for (const auto& endpoint : service.endpoints)
-	{
-		std::cout << "    " << endpoint.name << std::endl;
-		std::cout << "      Description: " << endpoint.description << std::endl;
-		std::cout << "      Request: " << std::endl;
-		std::cout << "        Description: " << endpoint.request.description << std::endl;
-		std::cout << "        Fields: " << std::endl;
-		for (const auto& field : endpoint.request.fields)
-		{
-			std::cout << "          " << field.name << std::endl;
-			std::cout << "            Description: " << field.description << std::endl;
-			std::cout << "            Datatype: " << field.datatype << std::endl;
-			std::cout << "            Optional: " << field.isOptional << std::endl;
-			std::cout << "            Array: " << field.isArray << std::endl;
-		}
-
-		std::cout << "      Response: " << std::endl;
-		std::cout << "        Description: " << endpoint.response.description << std::endl;
-		std::cout << "        Fields: " << std::endl;
-		for (const auto& field : endpoint.response.fields)
-		{
-			std::cout << "          " << field.name << std::endl;
-			std::cout << "            Description: " << field.description << std::endl;
-			std::cout << "            Datatype: " << field.datatype << std::endl;
-			std::cout << "            Optional: " << field.isOptional << std::endl;
-			std::cout << "            Array: " << field.isArray << std::endl;
-		}
-	}
+	service.print();
 
 	return 0;
 }
