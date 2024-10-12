@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <string_view>
 
 namespace service
@@ -17,6 +18,8 @@ namespace math
 		virtual RequestType getType() const = 0;
 		virtual std::string_view getName() const = 0;
 		virtual std::string_view getDescription() const = 0;
+		virtual void serialise() = 0;
+		virtual void deserialise() = 0;
 	};
 
 	// Predefined
@@ -27,6 +30,8 @@ namespace math
 		virtual ResponseType getType() const = 0;
 		virtual std::string_view getName() const = 0;
 		virtual std::string_view getDescription() const = 0;
+		virtual void serialise() = 0;
+		virtual void deserialise() = 0;
 	};
 
 	// Predefined
@@ -34,7 +39,7 @@ namespace math
 	{
 	public:
 		virtual ~AbstractService() = default;
-		virtual AbstractResponseData* handleRequest(const AbstractRequestData* r) = 0;
+		virtual std::unique_ptr<AbstractResponseData> handleRequest(const AbstractRequestData* r) = 0;
 		virtual std::string_view getName() const = 0;
 		virtual std::string_view getDescription() const = 0;
 	};
@@ -71,6 +76,19 @@ namespace math
 		{
 			return "Description of Add request data";
 		}
+
+		void serialise() final
+		{
+			// Serialise
+		}
+
+		void deserialise() final
+		{
+			// Deserialise
+		}
+
+		int a;
+		int b;
 	};
 
 	// Generated
@@ -91,6 +109,19 @@ namespace math
 		{
 			return "Description of Subtract request data";
 		}
+
+		void serialise() final
+		{
+			// Serialise
+		}
+
+		void deserialise() final
+		{
+			// Deserialise
+		}
+
+		int a;
+		int b;
 	};
 
 	// Generated
@@ -111,6 +142,18 @@ namespace math
 		{
 			return "Description of Add response data";
 		}
+
+		void serialise() final
+		{
+			// Serialise
+		}
+
+		void deserialise() final
+		{
+			// Deserialise
+		}
+
+		int c;
 	};
 
 	// Generated
@@ -131,6 +174,18 @@ namespace math
 		{
 			return "Description of Subtract response data";
 		}
+
+		void serialise() final
+		{
+			// Serialise
+		}
+
+		void deserialise() final
+		{
+			// Deserialise
+		}
+
+		int c;
 	};
 
 	// Generated
@@ -147,7 +202,7 @@ namespace math
 			return "Description of Math service";
 		}
 
-		AbstractResponseData* handleRequest(const AbstractRequestData* r) final
+		std::unique_ptr<AbstractResponseData> handleRequest(const AbstractRequestData* r) final
 		{
 			switch (r->getType())
 			{
@@ -158,38 +213,80 @@ namespace math
 			}
 		}
 
-		virtual AddResponseData* handleAddRequest(const AddRequestData* r) = 0;
-		virtual SubtractResponseData* handleSubstractRequest(const SubtractRequestData* r) = 0;
+		virtual std::unique_ptr<AddResponseData> handleAddRequest(const AddRequestData* r) = 0;
+		virtual std::unique_ptr<SubtractResponseData> handleSubstractRequest(const SubtractRequestData* r) = 0;
 	};
 
 	// User defined
 	class MathService: public AbstractMathService
 	{
 	public:
-		AddResponseData* handleAddRequest(const AddRequestData* r) final
+		// Needs to be a singleton
+		// Create and own shared memory region called service.math
+
+		std::unique_ptr<AddResponseData> handleAddRequest(const AddRequestData* r) final
 		{
 			return new AddResponseData();
 		}
 
-		SubtractResponseData* handleSubstractRequest(const SubtractRequestData* r) final
+		std::unique_ptr<SubtractResponseData> handleSubstractRequest(const SubtractRequestData* r) final
 		{
 			return new SubtractResponseData();
 		}
 	};
 
-	class MathServiceClient: public AbstractMathService
+	// Generated
+	class ServiceClient
 	{
 	public:
-		AddResponseData* add(const AddRequestData* r)
+		std::unique_ptr<AbstractResponseData> makeRequest(const AbstractRequestData* r)
 		{
-			return new AddResponseData();
+			// Connect to shared memory region called service.math
+			// Send request
+			// Receive response
+			// Return response
+			return {};
+		}
+	};
+
+	// Generated
+	class MathServiceClient: public ServiceClient
+	{
+	public:
+		// Connect to shared memory region called service.math
+
+		int add(int a, int b)
+		{
+			AddRequestData request;
+			request.a = a;
+			request.b = b;
+			request.serialise();
+			const auto response = makeRequest(&request);
+			return static_cast<AddResponseData*>(response.get())->c;
 		}
 
-		SubtractResponseData* substract(const SubtractRequestData* r)
+		int subtract(int a, int b)
 		{
-			return new SubtractResponseData();
+			SubtractRequestData request;
+			request.a = a;
+			request.b = b;
+			request.serialise();
+			const auto response = makeRequest(&request);
+			return static_cast<SubtractResponseData*>(response.get())->c;
 		}
 	};
 
 }  // namespace math
 }  // namespace service
+
+int main()
+{
+	service::math::MathService service;
+	service::math::MathServiceClient client;
+
+	service::math::AddRequestData addRequest;
+	const auto c = client.add(1, 2);
+	const auto d = client.subtract(1, 2);
+
+	return 0;
+}
