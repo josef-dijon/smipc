@@ -21,55 +21,39 @@
  * SOFTWARE.
  */
 
-#include "libsmipc/shared-memory/client.hpp"
+#ifndef SHARED_MEMORY_PIPE_RX_H_
+#define SHARED_MEMORY_PIPE_RX_H_
 
-#include <libsmipc/shared-memory/duplex-shared-memory-file.hpp>
+#include <libsmipc/shared-memory/abstract-shared-memory.hpp>
+#include <libsmipc/shared-memory/windows-shared-memory.hpp>
+#include <libsmipc/ring-buffer/ring-buffer-rx.hpp>
+#include <libsmipc/ring-buffer/packet.hpp>
 
-#include <iostream>
+#include <memory>
 #include <string>
-#include <vector>
-#include <windows.h>
+#include <cstdint>
 
-Client::Client()
-	: m_sharedMemory {MakeDuplexSharedMemoryFile("Global//test", 1024, true)}
-{}
-
-Client::~Client() = default;
-
-void Client::run()
+template <std::size_t NSize>
+class SharedMemoryPipeRx
 {
-	while (true)
+public:
+	SharedMemoryPipeRx(const std::string& name)
 	{
-		std::string str;
-		std::getline(std::cin, str);
-
-		if (str.empty())
-		{
-			continue;
-		}
-
-		std::vector<std::byte> data {};
-		data.resize(str.size());
-		std::copy(str.begin(), str.end(), reinterpret_cast<char*>(data.data()));
-		m_sharedMemory->write(data);
-
-		while (true)
-		{
-			const auto resp_data = m_sharedMemory->read();
-
-			if (! resp_data.empty())
-			{
-				std::string_view resp {reinterpret_cast<const char*>(resp_data.data()), resp_data.size()};
-				std::cout << "Received: " << resp << "\n";
-				break;
-			}
-
-			Sleep(100);
-		}
-
-		if (str == "exit" || str == "quit" || str == "q")
-		{
-			break;
-		}
+		m_sharedMemory = std::make_unique<WindowsSharedMemory>();
+		m_sharedMemory->create(name, NSize);
+		m_ringBuffer = reinterpret_cast<RingBufferRx<NSize>*>(m_sharedMemory->getView().data);
 	}
-}
+	~SharedMemoryPipeRx() 
+	{
+		m_sharedMemory->close();
+		m_ringBuffer = nullptr;
+	}
+
+	auto read() -> Packet {}
+
+private:
+	std::unique_ptr<ISharedMemory> m_sharedMemory;
+	RingBufferRx<NSize>* m_ringBuffer;
+};
+
+#endif  // SHARED_MEMORY_PIPE_RX_H_

@@ -1,17 +1,17 @@
 /* MIT License
- * 
+ *
  * Copyright (c) 2024 Josef de Joanelli (josef@pixelrift.io)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,23 +21,29 @@
  * SOFTWARE.
  */
 
-#ifndef CLIENT_H_
-#define CLIENT_H_
+#ifndef ABSTRACT_SHARED_MEMORY_H_
+#define ABSTRACT_SHARED_MEMORY_H_
 
-#include <memory>
+#include <libsmipc/shared-memory/atomic-memory-view.hpp>
 
-class DuplexSharedMemoryFile;
+#include <cstdint>
+#include <span>
+#include <string_view>
+#include <vector>
 
-class Client
+class ISharedMemory
 {
 public:
-	Client();
-	~Client();
+	virtual ~ISharedMemory() = default;
 
-	void run();
+	virtual void create(const std::string& name, std::size_t size) = 0;
+	virtual void open(const std::string& name) = 0;
+	virtual void close() = 0;
 
-private:
-	std::unique_ptr<DuplexSharedMemoryFile> m_sharedMemory {};
+	virtual auto getName() const -> std::string_view = 0;
+	virtual auto getSize() const -> std::size_t = 0;
+	virtual auto getView() -> AtomicMemoryView = 0;
+	virtual auto exists() const -> bool = 0;
 };
 
-#endif  // CLIENT_H_
+#endif  // ABSTRACT_SHARED_MEMORY_H_

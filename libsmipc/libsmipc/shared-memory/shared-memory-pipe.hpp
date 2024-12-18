@@ -21,46 +21,54 @@
  * SOFTWARE.
  */
 
-#include "libsmipc/shared-memory/server.hpp"
+#ifndef SHARED_MEMORY_PIPE_H_
+#define SHARED_MEMORY_PIPE_H_
 
-#include <libsmipc/shared-memory/duplex_shared_memory_file.hpp>
+#include <libsmipc/shared-memory/shared-memory-pipe-rx.hpp>
+#include <libsmipc/shared-memory/shared-memory-pipe-tx.hpp>
+#include <libsmipc/shared-memory/packet.hpp>
 
-#include <iostream>
+#include <memory>
 #include <string>
-#include <string_view>
-#include <vector>
+#include <cstdint>
 
-Server::Server()
-	: m_sharedMemory {MakeDuplexSharedMemoryFile("Global//test", 1024, false)}
-{}
 
-Server::~Server() = default;
-
-void Server::run()
+template <std::size_t NSize>
+class SharedMemoryPipe
 {
-	while (true)
+public:
+	SharedMemoryPipe(const std::string& rxName, const std::string& txName)
+		: m_sharedMemoryPipeRx {rxName}
+		, m_sharedMemoryPipeTx {txName}
+	{}
+	~SharedMemoryPipe() = default;
+
+	auto read() -> Packet
 	{
-		const std::vector<std::byte> data = m_sharedMemory->read();
-
-		if (data.empty())
-		{
-			Sleep(100);
-			continue;
-		}
-
-		std::string_view str {reinterpret_cast<const char*>(data.data()), data.size()};
-
-		const std::string_view resp {"ack"};
-		std::vector<std::byte> resp_data {};
-		resp_data.resize(resp.size());
-		std::copy(resp.begin(), resp.end(), reinterpret_cast<char*>(resp_data.data()));
-		m_sharedMemory->write(resp_data);
-
-		std::cout << "Received: " << str << "\n";
-
-		if (str == "exit" || str == "quit" || str == "q")
-		{
-			break;
-		}
+		return m_sharedMemoryPipeRx.read();
 	}
+	void write(Packet&& packet)
+	{
+		m_sharedMemoryPipeTx.write(std::move(packet));
+	}
+	void write(const Packet& packet)
+	{
+		m_sharedMemoryPipeTx.write(packet);
+	}
+
+private:
+	SharedMemoryPipeRx<NSize> m_sharedMemoryPipeRx;
+	SharedMemoryPipeTx<NSize> m_sharedMemoryPipeTx;
+};
+
+std::unique_ptr<SharedMemoryPipe> MakeHostSharedMemoryPipe(const std::string& name)
+{
+	return std::make_unique<SharedMemoryPipe>(name + ".rx", name + ".tx");
 }
+
+std::unique_ptr<SharedMemoryPipe> MakeClientSharedMemoryPipe(const std::string& name)
+{
+	return std::make_unique<SharedMemoryPipe>(name + ".tx", name + ".rx");
+}
+
+#endif  // SHARED_MEMORY_PIPE_H_

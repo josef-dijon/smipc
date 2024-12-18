@@ -21,42 +21,32 @@
  * SOFTWARE.
  */
 
-#ifndef SHARED_MEMORY_FILE_H_
-#define SHARED_MEMORY_FILE_H_
+#ifndef WINDOWS_SHARED_MEMORY_H_
+#define WINDOWS_SHARED_MEMORY_H_
 
+#include <libsmipc/shared-memory/abstract-shared-memory.hpp>
 #include <libsmipc/shared-memory/atomic-memory-view.hpp>
 
 #include <cstdint>
-#include <memory>
-#include <span>
 #include <string>
-#include <string_view>
-#include <vector>
 
-class SharedMemoryFile
+class WindowsSharedMemory: public ISharedMemory
 {
 public:
-	SharedMemoryFile(std::string_view name, std::size_t size);
-	~SharedMemoryFile();
-
-	auto getName() const -> const std::string&;
-	auto getSize() const -> std::size_t;
-
-	auto read() const -> std::vector<std::byte>;
-	void write(std::span<const std::byte> data);
+	void create(const std::string& name, std::size_t size) final;
+	void open(const std::string& name) final;
+	void close() final;
+	auto getName() const -> std::string_view final;
+	auto getSize() const -> std::size_t final;
+	auto getView() -> AtomicMemoryView final;
+	auto exists() const -> bool final;
 
 private:
-	void openSharedMemoryFile();
-	void closeSharedMemoryFile();
-
-	std::string m_name {};
 	std::size_t m_size {};
-
-	std::uintptr_t m_handle {};
-	std::byte* m_buffer {};
+	std::string m_name {};
+	std::uintptr_t m_handle {nullptr};
+	std::byte* m_buffer {nullptr};
 	AtomicMemoryView m_view {};
 };
 
-auto MakeSharedMemoryFile(std::string_view name, std::size_t size) -> std::unique_ptr<SharedMemoryFile>;
-
-#endif  // SHARED_MEMORY_FILE_H_
+#endif  // WINDOWS_SHARED_MEMORY_H_

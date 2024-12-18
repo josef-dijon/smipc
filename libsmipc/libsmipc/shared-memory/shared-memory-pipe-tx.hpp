@@ -21,29 +21,39 @@
  * SOFTWARE.
  */
 
-#ifndef DUPLEX_SHARED_MEMORY_FILE_H_
-#define DUPLEX_SHARED_MEMORY_FILE_H_
+#ifndef SHARED_MEMORY_PIPE_TX_H_
+#define SHARED_MEMORY_PIPE_TX_H_
+
+#include <libsmipc/shared-memory/abstract-shared-memory.hpp>
+#include <libsmipc/shared-memory/windows-shared-memory.hpp>
+#include <libsmipc/ring-buffer/ring-buffer-tx.hpp>
+#include <libsmipc/ring-buffer/packet.hpp>
 
 #include <memory>
-#include <span>
-#include <string_view>
+#include <string>
+#include <cstdint>
 
-class SharedMemoryFile;
-
-class DuplexSharedMemoryFile
+template <std::size_t NSize>
+class SharedMemoryPipeTx
 {
 public:
-	DuplexSharedMemoryFile(std::string_view rxName, std::string_view txName, std::size_t size);
-	~DuplexSharedMemoryFile();
+	SharedMemoryPipeTx(const std::string& name)
+	{
+		m_sharedMemory = std::make_unique<WindowsSharedMemory>();
+		m_sharedMemory->create(name, NSize);
+		m_ringBuffer = reinterpret_cast<RingBufferTx<NSize>*>(m_sharedMemory->getView().data);
+	}
+	~SharedMemoryPipeTx()
+	{
+		m_sharedMemory->close();
+		m_ringBuffer = nullptr;
+	}
 
-	auto read() -> std::span<const std::byte>;
-	void write(std::span<const std::byte> data);
+	void write(const Packet& packet) {}
 
 private:
-	std::unique_ptr<SharedMemoryFile> m_sharedMemoryFileRx {};
-	std::unique_ptr<SharedMemoryFile> m_sharedMemoryFileTx {};
+	std::unique_ptr<ISharedMemory> m_sharedMemory;
+	RingBufferTx<NSize>* m_ringBuffer;
 };
 
-auto MakeDuplexSharedMemoryFile(std::string_view name, std::size_t size, bool is_client) -> std::unique_ptr<DuplexSharedMemoryFile>;
-
-#endif  // DUPLEX_SHARED_MEMORY_FILE_H_
+#endif  // SHARED_MEMORY_PIPE_TX_H_
