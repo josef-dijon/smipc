@@ -30,9 +30,8 @@ add_library(
   smipc STATIC
   "${CMAKE_CURRENT_SOURCE_DIR}/libsmipc/ring-buffer/dekkar-lock.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/libsmipc/ring-buffer/atomic-spin-lock.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/libsmipc/shared-memory/duplex-shared-memory-file.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/libsmipc/$<$<PLATFORM_ID:Windows>:shared-memory/windows-shared-memory-file.cpp>"
-  "${CMAKE_CURRENT_SOURCE_DIR}/libsmipc/$<$<PLATFORM_ID:Linux>:shared-memory/posix-shared-memory-file.cpp>"
+  "${CMAKE_CURRENT_SOURCE_DIR}/libsmipc/$<$<PLATFORM_ID:Windows>:shared-memory/windows-shared-memory.cpp>"
+  #"${CMAKE_CURRENT_SOURCE_DIR}/libsmipc/$<$<PLATFORM_ID:Linux>:shared-memory/posix-shared-memory.cpp>"
   # "${CMAKE_CURRENT_SOURCE_DIR}/shared_memory/client.cpp"
   # "${CMAKE_CURRENT_SOURCE_DIR}/shared_memory/server.cpp"
 )
@@ -42,6 +41,13 @@ target_link_libraries(smipc PUBLIC fmt::fmt)
 target_include_directories(smipc PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
 set_property(TARGET smipc PROPERTY CXX_STANDARD 23)
+
+add_executable(shared-memory-unit-test
+               "${CMAKE_CURRENT_SOURCE_DIR}/libsmipc/shared-memory/shared-memory.test.cpp")
+target_link_libraries(shared-memory-unit-test PRIVATE smipc)
+target_link_libraries(shared-memory-unit-test PRIVATE GTest::gtest)
+set_property(TARGET shared-memory-unit-test PROPERTY CXX_STANDARD 23)
+add_test(NAME shared-memory-unit-test COMMAND shared-memory-unit-test --gtest_color=1)
 
 add_executable(serdes-unit-test
                "${CMAKE_CURRENT_SOURCE_DIR}/libsmipc/serdes/serdes.test.cpp")
