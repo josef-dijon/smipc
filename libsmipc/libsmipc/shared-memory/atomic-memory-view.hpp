@@ -30,7 +30,7 @@
 struct AtomicMemoryView
 {
 	std::atomic_flag* lock;
-	std::size_t* dataSize;
+	std::size_t dataSize;
 	std::byte* data;
 };
 

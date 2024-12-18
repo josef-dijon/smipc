@@ -44,7 +44,7 @@ public:
 private:
 	std::size_t m_size {};
 	std::string m_name {};
-	std::uintptr_t m_handle {nullptr};
+	std::uintptr_t m_handle {};
 	std::byte* m_buffer {nullptr};
 	AtomicMemoryView m_view {};
 };

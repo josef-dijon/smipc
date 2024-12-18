@@ -24,6 +24,7 @@
 #include <libsmipc/shared-memory/windows-shared-memory.hpp>
 
 #include <algorithm>
+#include <format>
 #include <iterator>
 #include <stdexcept>
 #include <windows.h>
@@ -58,7 +59,7 @@ void WindowsSharedMemory::create(const std::string& name, std::size_t size)
 	}
 
 	m_view.lock = reinterpret_cast<std::atomic_flag*>(m_buffer);
-	m_view.dataSize = reinterpret_cast<std::size_t*>(m_buffer + sizeof(std::atomic_flag));
+	m_view.dataSize = *reinterpret_cast<std::size_t*>(m_buffer + sizeof(std::atomic_flag));
 	m_view.data = m_buffer + sizeof(std::atomic_flag) + sizeof(std::size_t);
 }
 
@@ -98,7 +99,7 @@ void WindowsSharedMemory::close()
 {
 	UnmapViewOfFile(m_buffer);
 	CloseHandle(reinterpret_cast<HANDLE>(m_handle));
-	m_handle = nullptr;
+	m_handle = 0u;
 }
 
 auto WindowsSharedMemory::getName() const -> std::string_view
@@ -118,5 +119,5 @@ auto WindowsSharedMemory::getView() -> AtomicMemoryView
 
 auto WindowsSharedMemory::exists() const -> bool
 {
-	return m_handle != nullptr;
+	return m_handle != 0;
 }
