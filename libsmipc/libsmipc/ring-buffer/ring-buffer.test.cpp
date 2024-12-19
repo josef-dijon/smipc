@@ -35,7 +35,7 @@ TEST(ring_buffer, basic_rx_tx)
 {
 	constexpr std::size_t bufferSize {256u};
 
-	uint8_t buffer[bufferSize];
+	uint8_t buffer[bufferSize] {};
 	RingBufferTx<bufferSize> tx(buffer);
 	RingBufferRx<bufferSize> rx(buffer);
 
@@ -50,7 +50,7 @@ TEST(ring_buffer, basic_rx_tx)
 	EXPECT_EQ(rx.getMessageCount(), 1u);
 	EXPECT_FALSE(rx.isEmpty());
 
-	const auto rxPacket = rx.pop();
+	const auto rxPacket = rx.pull();
 	EXPECT_TRUE(rx.isEmpty());
 	EXPECT_FALSE(tx.isFull());
 	EXPECT_EQ(rx.getMessageCount(), 0u);
@@ -63,7 +63,7 @@ TEST(ring_buffer, basic_tx_throw_on_overflow)
 {
 	constexpr std::size_t bufferSize {128u};
 
-	uint8_t buffer[bufferSize];
+	uint8_t buffer[bufferSize] {};
 	RingBufferTx<bufferSize> tx(buffer);
 
 	Packet packet {std::vector<uint8_t>(129u)};
@@ -75,7 +75,7 @@ TEST(ring_buffer, basic_rx_tx_1)
 {
 	constexpr std::size_t bufferSize {128u};
 
-	uint8_t buffer[bufferSize];
+	uint8_t buffer[bufferSize] {};
 	RingBufferTx<bufferSize> tx(buffer);
 	RingBufferRx<bufferSize> rx(buffer);
 
@@ -98,7 +98,7 @@ TEST(ring_buffer, basic_rx_tx_1)
 		EXPECT_EQ(rx.getMessageCount(), 3u);
 		EXPECT_FALSE(rx.isEmpty());
 
-		const auto rxPacket = rx.pop();
+		const auto rxPacket = rx.pull();
 		EXPECT_FALSE(rx.isEmpty());
 		EXPECT_FALSE(tx.isFull());
 		EXPECT_EQ(rx.getMessageCount(), 2u);
@@ -109,14 +109,14 @@ TEST(ring_buffer, basic_rx_tx_1)
 		EXPECT_EQ(rxPacket.data, expectedRxPacket.data);
 	}
 
-	const auto rxPacket = rx.pop();
+	const auto rxPacket = rx.pull();
 	EXPECT_FALSE(rx.isEmpty());
 	EXPECT_FALSE(tx.isFull());
 	EXPECT_EQ(rx.getMessageCount(), 1u);
 	EXPECT_EQ(rxPacket.data.size(), 1u);
 	EXPECT_EQ(rxPacket.data, std::vector<uint8_t>({254u}));
 
-	const auto rxLastPacket = rx.pop();
+	const auto rxLastPacket = rx.pull();
 	EXPECT_TRUE(rx.isEmpty());
 	EXPECT_FALSE(tx.isFull());
 	EXPECT_EQ(rx.getMessageCount(), 0u);
@@ -128,7 +128,7 @@ TEST(ring_buffer, basic_rx_tx_3)
 {
 	constexpr std::size_t bufferSize {128u};
 
-	uint8_t buffer[bufferSize];
+	uint8_t buffer[bufferSize] {};
 	RingBufferTx<bufferSize> tx(buffer);
 	RingBufferRx<bufferSize> rx(buffer);
 
@@ -151,7 +151,7 @@ TEST(ring_buffer, basic_rx_tx_3)
 		EXPECT_EQ(rx.getMessageCount(), 3u);
 		EXPECT_FALSE(rx.isEmpty());
 
-		const auto rxPacket = rx.pop();
+		const auto rxPacket = rx.pull();
 		EXPECT_FALSE(rx.isEmpty());
 		EXPECT_FALSE(tx.isFull());
 		EXPECT_EQ(rx.getMessageCount(), 2u);
@@ -162,14 +162,14 @@ TEST(ring_buffer, basic_rx_tx_3)
 		EXPECT_EQ(rxPacket.data, expectedRxPacket.data);
 	}
 
-	const auto rxPacket = rx.pop();
+	const auto rxPacket = rx.pull();
 	EXPECT_FALSE(rx.isEmpty());
 	EXPECT_FALSE(tx.isFull());
 	EXPECT_EQ(rx.getMessageCount(), 1u);
 	EXPECT_EQ(rxPacket.data.size(), 3u);
 	EXPECT_EQ(rxPacket.data, std::vector<uint8_t>({250u, 251u, 252u}));
 
-	const auto rxLastPacket = rx.pop();
+	const auto rxLastPacket = rx.pull();
 	EXPECT_TRUE(rx.isEmpty());
 	EXPECT_FALSE(tx.isFull());
 	EXPECT_EQ(rx.getMessageCount(), 0u);
@@ -181,7 +181,7 @@ TEST(ring_buffer, basic_rx_tx_4)
 {
 	constexpr std::size_t bufferSize {128u};
 
-	uint8_t buffer[bufferSize];
+	uint8_t buffer[bufferSize] {};
 	RingBufferTx<bufferSize> tx(buffer);
 	RingBufferRx<bufferSize> rx(buffer);
 
@@ -204,7 +204,7 @@ TEST(ring_buffer, basic_rx_tx_4)
 		EXPECT_EQ(rx.getMessageCount(), 3u);
 		EXPECT_FALSE(rx.isEmpty());
 
-		const auto rxPacket = rx.pop();
+		const auto rxPacket = rx.pull();
 		EXPECT_FALSE(rx.isEmpty());
 		EXPECT_FALSE(tx.isFull());
 		EXPECT_EQ(rx.getMessageCount(), 2u);
@@ -215,14 +215,14 @@ TEST(ring_buffer, basic_rx_tx_4)
 		EXPECT_EQ(rxPacket.data, expectedRxPacket.data);
 	}
 
-	const auto rxPacket = rx.pop();
+	const auto rxPacket = rx.pull();
 	EXPECT_FALSE(rx.isEmpty());
 	EXPECT_FALSE(tx.isFull());
 	EXPECT_EQ(rx.getMessageCount(), 1u);
 	EXPECT_EQ(rxPacket.data.size(), 4u);
 	EXPECT_EQ(rxPacket.data, std::vector<uint8_t>({248u, 249u, 250u, 251u}));
 
-	const auto rxLastPacket = rx.pop();
+	const auto rxLastPacket = rx.pull();
 	EXPECT_TRUE(rx.isEmpty());
 	EXPECT_FALSE(tx.isFull());
 	EXPECT_EQ(rx.getMessageCount(), 0u);
@@ -234,7 +234,7 @@ TEST(ring_buffer, basic_rx_tx_5)
 {
 	constexpr std::size_t bufferSize {128u};
 
-	uint8_t buffer[bufferSize];
+	uint8_t buffer[bufferSize] {};
 	RingBufferTx<bufferSize> tx(buffer);
 	RingBufferRx<bufferSize> rx(buffer);
 
@@ -257,7 +257,7 @@ TEST(ring_buffer, basic_rx_tx_5)
 		EXPECT_EQ(rx.getMessageCount(), 3u);
 		EXPECT_FALSE(rx.isEmpty());
 
-		const auto rxPacket = rx.pop();
+		const auto rxPacket = rx.pull();
 		EXPECT_FALSE(rx.isEmpty());
 		EXPECT_FALSE(tx.isFull());
 		EXPECT_EQ(rx.getMessageCount(), 2u);
@@ -268,14 +268,14 @@ TEST(ring_buffer, basic_rx_tx_5)
 		EXPECT_EQ(rxPacket.data, expectedRxPacket.data);
 	}
 
-	const auto rxPacket = rx.pop();
+	const auto rxPacket = rx.pull();
 	EXPECT_FALSE(rx.isEmpty());
 	EXPECT_FALSE(tx.isFull());
 	EXPECT_EQ(rx.getMessageCount(), 1u);
 	EXPECT_EQ(rxPacket.data.size(), 5u);
 	EXPECT_EQ(rxPacket.data, std::vector<uint8_t>({246u, 247u, 248u, 249u, 250u}));
 
-	const auto rxLastPacket = rx.pop();
+	const auto rxLastPacket = rx.pull();
 	EXPECT_TRUE(rx.isEmpty());
 	EXPECT_FALSE(tx.isFull());
 	EXPECT_EQ(rx.getMessageCount(), 0u);
@@ -287,7 +287,7 @@ TEST(ring_buffer, basic_rx_tx_13)
 {
 	constexpr std::size_t bufferSize {256u};
 
-	uint8_t buffer[bufferSize];
+	uint8_t buffer[bufferSize] {};
 	RingBufferTx<bufferSize> tx(buffer);
 	RingBufferRx<bufferSize> rx(buffer);
 
@@ -310,7 +310,7 @@ TEST(ring_buffer, basic_rx_tx_13)
 		EXPECT_EQ(rx.getMessageCount(), 3u);
 		EXPECT_FALSE(rx.isEmpty());
 
-		const auto rxPacket = rx.pop();
+		const auto rxPacket = rx.pull();
 		EXPECT_FALSE(rx.isEmpty());
 		EXPECT_FALSE(tx.isFull());
 		EXPECT_EQ(rx.getMessageCount(), 2u);
@@ -321,14 +321,14 @@ TEST(ring_buffer, basic_rx_tx_13)
 		EXPECT_EQ(rxPacket.data, expectedRxPacket.data);
 	}
 
-	const auto rxPacket = rx.pop();
+	const auto rxPacket = rx.pull();
 	EXPECT_FALSE(rx.isEmpty());
 	EXPECT_FALSE(tx.isFull());
 	EXPECT_EQ(rx.getMessageCount(), 1u);
 	EXPECT_EQ(rxPacket.data.size(), 13u);
 	EXPECT_EQ(rxPacket.data, std::vector<uint8_t>({230u, 231u, 232u, 233u, 234u, 235u, 236u, 237u, 238u, 239u, 240u, 241u, 242u}));
 
-	const auto rxLastPacket = rx.pop();
+	const auto rxLastPacket = rx.pull();
 	EXPECT_TRUE(rx.isEmpty());
 	EXPECT_FALSE(tx.isFull());
 	EXPECT_EQ(rx.getMessageCount(), 0u);

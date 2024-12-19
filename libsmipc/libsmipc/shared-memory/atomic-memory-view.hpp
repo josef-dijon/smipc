@@ -29,9 +29,9 @@
 
 struct AtomicMemoryView
 {
-	std::atomic_flag* lock;
-	std::size_t dataSize;
-	std::byte* data;
+	std::atomic_flag* lock {nullptr};
+	uint32_t* dataSize {nullptr};
+	std::byte* data {nullptr};
 };
 
 #endif  // ATOMIC_MEMORY_VIEW_H_

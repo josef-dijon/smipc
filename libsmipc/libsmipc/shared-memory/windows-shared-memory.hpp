@@ -39,7 +39,7 @@ public:
 	auto getName() const -> std::string_view final;
 	auto getSize() const -> std::size_t final;
 	auto getView() -> AtomicMemoryView final;
-	auto exists() const -> bool final;
+	auto getView() const -> const AtomicMemoryView final;
 
 private:
 	std::size_t m_size {};

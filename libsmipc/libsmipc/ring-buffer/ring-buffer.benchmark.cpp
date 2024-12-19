@@ -29,7 +29,7 @@
 static void BM_push_pop_1(benchmark::State& state)
 {
 	constexpr std::size_t kSize = 1024;
-	uint8_t buffer[kSize];
+	uint8_t buffer[kSize] {};
 
 	RingBufferRx<kSize> rx {buffer};
 	RingBufferTx<kSize> tx {buffer};
@@ -41,7 +41,7 @@ static void BM_push_pop_1(benchmark::State& state)
 	for (auto _ : state)
 	{
 		tx.push(packet);
-		auto p1 = rx.pop();
+		auto p1 = rx.pull();
 
 		benchmark::DoNotOptimize(p1);
 	}
@@ -50,7 +50,7 @@ static void BM_push_pop_1(benchmark::State& state)
 static void BM_push_pop_4(benchmark::State& state)
 {
 	constexpr std::size_t kSize = 1024;
-	uint8_t buffer[kSize];
+	uint8_t buffer[kSize] {};
 
 	RingBufferRx<kSize> rx {buffer};
 	RingBufferTx<kSize> tx {buffer};
@@ -66,10 +66,10 @@ static void BM_push_pop_4(benchmark::State& state)
 		tx.push(packet);
 		tx.push(packet);
 
-		auto p1 = rx.pop();
-		auto p2 = rx.pop();
-		auto p3 = rx.pop();
-		auto p4 = rx.pop();
+		auto p1 = rx.pull();
+		auto p2 = rx.pull();
+		auto p3 = rx.pull();
+		auto p4 = rx.pull();
 
 		benchmark::DoNotOptimize(p1);
 		benchmark::DoNotOptimize(p2);

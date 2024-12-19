@@ -37,19 +37,31 @@ template <std::size_t NSize>
 class SharedMemoryPipeTx
 {
 public:
-	SharedMemoryPipeTx(const std::string& name)
+	SharedMemoryPipeTx(std::unique_ptr<ISharedMemory>&& sharedMemory)
+		: m_sharedMemory {std::move(sharedMemory)}
 	{
-		m_sharedMemory = std::make_unique<WindowsSharedMemory>();
-		m_sharedMemory->create(name, NSize);
 		m_ringBuffer = reinterpret_cast<RingBufferTx<NSize>*>(m_sharedMemory->getView().data);
 	}
+
 	~SharedMemoryPipeTx()
 	{
 		m_sharedMemory->close();
 		m_ringBuffer = nullptr;
 	}
 
-	void write(const Packet& packet) {}
+	void write(const Packet& packet) {
+		m_ringBuffer->push(packet);
+	}
+
+	auto getSharedMemory() const -> const ISharedMemory*
+	{
+		return m_sharedMemory.get();
+	}
+
+	auto getRingBuffer() const -> const RingBufferTx<NSize>*
+	{
+		return m_ringBuffer;
+	}
 
 private:
 	std::unique_ptr<ISharedMemory> m_sharedMemory;

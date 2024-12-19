@@ -40,7 +40,7 @@ int main()
 	packet.print();
 	tx.push(packet);
 
-	const Packet rxPacket {rx.pop()};
+	const Packet rxPacket {rx.pull()};
 	std::cout << "Rx Packet: \n";
 	rxPacket.print();
 

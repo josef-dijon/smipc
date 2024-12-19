@@ -44,7 +44,7 @@ public:
 	virtual auto getName() const -> std::string_view = 0;
 	virtual auto getSize() const -> std::size_t = 0;
 	virtual auto getView() -> AtomicMemoryView = 0;
-	virtual auto exists() const -> bool = 0;
+	virtual auto getView() const -> const AtomicMemoryView = 0;
 };
 
 #endif  // ABSTRACT_SHARED_MEMORY_H_

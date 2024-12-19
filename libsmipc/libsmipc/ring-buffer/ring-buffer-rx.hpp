@@ -58,7 +58,7 @@ public:
 	}
 
 	[[nodiscard]]
-	auto pop() -> Packet
+	auto pull() -> Packet
 	{
 		if (isEmpty())
 		{

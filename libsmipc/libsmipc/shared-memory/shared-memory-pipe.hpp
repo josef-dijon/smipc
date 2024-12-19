@@ -26,7 +26,7 @@
 
 #include <libsmipc/shared-memory/shared-memory-pipe-rx.hpp>
 #include <libsmipc/shared-memory/shared-memory-pipe-tx.hpp>
-#include <libsmipc/shared-memory/packet.hpp>
+#include <libsmipc/ring-buffer/packet.hpp>
 
 #include <memory>
 #include <string>
@@ -37,11 +37,21 @@ template <std::size_t NSize>
 class SharedMemoryPipe
 {
 public:
-	SharedMemoryPipe(const std::string& rxName, const std::string& txName)
-		: m_sharedMemoryPipeRx {rxName}
-		, m_sharedMemoryPipeTx {txName}
+	SharedMemoryPipe(std::unique_ptr<ISharedMemory>&& rxSharedMemory, std::unique_ptr<ISharedMemory>&& txSharedMemory)
+		: m_sharedMemoryPipeRx {std::move(rxSharedMemory)}
+		, m_sharedMemoryPipeTx {std::move(txSharedMemory)}
 	{}
 	~SharedMemoryPipe() = default;
+
+	auto getRxPipe() const -> const SharedMemoryPipeRx<NSize>&
+	{
+		return m_sharedMemoryPipeRx;
+	}
+
+	auto getTxPipe() const -> const SharedMemoryPipeTx<NSize>&
+	{
+		return m_sharedMemoryPipeTx;
+	}
 
 	auto read() -> Packet
 	{
@@ -61,14 +71,26 @@ private:
 	SharedMemoryPipeTx<NSize> m_sharedMemoryPipeTx;
 };
 
-std::unique_ptr<SharedMemoryPipe> MakeHostSharedMemoryPipe(const std::string& name)
+template <std::size_t NSize>
+inline std::unique_ptr<SharedMemoryPipe<NSize>> CreateSharedMemoryPipe(const std::string& name)
 {
-	return std::make_unique<SharedMemoryPipe>(name + ".rx", name + ".tx");
+	auto rxSharedMemory = std::make_unique<WindowsSharedMemory>();
+	rxSharedMemory->create(name + ".rx", NSize);
+	auto txSharedMemory = std::make_unique<WindowsSharedMemory>();
+	txSharedMemory->create(name + ".tx", NSize);
+
+	return std::make_unique<SharedMemoryPipe<NSize>>(std::move(rxSharedMemory), std::move(txSharedMemory));
 }
 
-std::unique_ptr<SharedMemoryPipe> MakeClientSharedMemoryPipe(const std::string& name)
+template <std::size_t NSize>
+inline std::unique_ptr<SharedMemoryPipe<NSize>> OpenSharedMemoryPipe(const std::string& name)
 {
-	return std::make_unique<SharedMemoryPipe>(name + ".tx", name + ".rx");
+	auto rxSharedMemory = std::make_unique<WindowsSharedMemory>();
+	rxSharedMemory->open(name + ".rx");
+	auto txSharedMemory = std::make_unique<WindowsSharedMemory>();
+	txSharedMemory->open(name + ".tx");
+
+	return std::make_unique<SharedMemoryPipe<NSize>>(std::move(rxSharedMemory), std::move(txSharedMemory));
 }
 
 #endif  // SHARED_MEMORY_PIPE_H_

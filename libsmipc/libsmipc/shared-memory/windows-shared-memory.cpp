@@ -22,6 +22,7 @@
  */
 
 #include <libsmipc/shared-memory/windows-shared-memory.hpp>
+#include <libsmipc/ring-buffer/atomic-spin-lock.hpp>
 
 #include <algorithm>
 #include <format>
@@ -31,17 +32,17 @@
 
 void WindowsSharedMemory::create(const std::string& name, std::size_t size)
 {
-	if (exists())
+	if (m_handle != 0)
 	{
-		open(name);
-		return;
+		throw std::runtime_error("Shared memory already created.");
 	}
 
 	m_name = name;
 	m_size = size;
 
 	const uint32_t low_size {static_cast<uint32_t>(m_size & 0xFFFFFFFF)};
-	const uint32_t high_size {static_cast<std::size_t>((m_size >> 32) & 0xFFFFFFFF)};
+	const uint32_t high_size {static_cast<uint32_t>((m_size >> 32) & 0xFFFFFFFF)};
+
 	m_handle = reinterpret_cast<std::uintptr_t>(CreateFileMappingA(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, high_size, low_size, m_name.c_str()));
 
 	if (reinterpret_cast<HANDLE>(m_handle) == nullptr)
@@ -59,23 +60,30 @@ void WindowsSharedMemory::create(const std::string& name, std::size_t size)
 	}
 
 	m_view.lock = reinterpret_cast<std::atomic_flag*>(m_buffer);
-	m_view.dataSize = *reinterpret_cast<std::size_t*>(m_buffer + sizeof(std::atomic_flag));
-	m_view.data = m_buffer + sizeof(std::atomic_flag) + sizeof(std::size_t);
+
+	while (m_view.lock->test_and_set(std::memory_order_acquire));
+
+	m_view.dataSize = reinterpret_cast<uint32_t*>(m_buffer + sizeof(std::atomic_flag));
+	*m_view.dataSize = m_size - sizeof(std::atomic_flag) - sizeof(uint32_t);
+	m_view.data = m_buffer + sizeof(std::atomic_flag) + sizeof(uint32_t);
+
+	m_view.lock->clear(std::memory_order_release);
 }
 
 void WindowsSharedMemory::open(const std::string& name)
 {
-	if (! exists())
+	if (m_handle != 0)
 	{
-		create(name, m_size);
-		return;
+		throw std::runtime_error("Shared memory already opened.");
 	}
 
-	m_handle = reinterpret_cast<std::uintptr_t>(OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, name.data()));
+	m_name = name;
+
+	m_handle = reinterpret_cast<std::uintptr_t>(OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, m_name.c_str()));
 
 	if (reinterpret_cast<HANDLE>(m_handle) == nullptr)
 	{
-		throw std::runtime_error(std::format("Failed to create file mapping object. Error code: {}", GetLastError()));
+		throw std::runtime_error(std::format("Failed to open file mapping object. Error code: {}", GetLastError()));
 	}
 
 	m_buffer = static_cast<std::byte*>(MapViewOfFile(reinterpret_cast<HANDLE>(m_handle), FILE_MAP_ALL_ACCESS, 0, 0, m_size));
@@ -87,19 +95,25 @@ void WindowsSharedMemory::open(const std::string& name)
 		throw std::runtime_error(std::format("Failed to map view of file. Error code: {}", errorCode));
 	}
 
-	const auto dataSize = *reinterpret_cast<std::size_t*>(m_buffer + sizeof(std::atomic_flag));
-	m_size = dataSize + sizeof(std::atomic_flag) + sizeof(std::size_t);
-
 	m_view.lock = reinterpret_cast<std::atomic_flag*>(m_buffer);
-	m_view.dataSize = dataSize;
-	m_view.data = m_buffer + sizeof(std::atomic_flag) + sizeof(std::size_t);
+
+	while (m_view.lock->test_and_set(std::memory_order_acquire));
+
+	m_view.dataSize = reinterpret_cast<uint32_t*>(m_buffer + sizeof(std::atomic_flag));
+	m_size = *m_view.dataSize + sizeof(std::atomic_flag) + sizeof(uint32_t);
+	m_view.data = m_buffer + sizeof(std::atomic_flag) + sizeof(uint32_t);
+
+	m_view.lock->clear(std::memory_order_release);
 }
 
 void WindowsSharedMemory::close()
 {
+	while(m_view.lock->test_and_set(std::memory_order_acquire));
 	UnmapViewOfFile(m_buffer);
 	CloseHandle(reinterpret_cast<HANDLE>(m_handle));
 	m_handle = 0u;
+	m_buffer = nullptr;
+	m_view = {};
 }
 
 auto WindowsSharedMemory::getName() const -> std::string_view
@@ -117,7 +131,7 @@ auto WindowsSharedMemory::getView() -> AtomicMemoryView
 	return m_view;
 }
 
-auto WindowsSharedMemory::exists() const -> bool
+auto WindowsSharedMemory::getView() const -> const AtomicMemoryView
 {
-	return m_handle != 0;
+	return m_view;
 }
