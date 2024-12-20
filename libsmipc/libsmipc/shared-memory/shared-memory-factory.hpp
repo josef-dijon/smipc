@@ -21,33 +21,14 @@
  * SOFTWARE.
  */
 
-#ifndef WINDOWS_SHARED_MEMORY_H_
-#define WINDOWS_SHARED_MEMORY_H_
+#ifndef SHARED_MEMORY_FACTORY_H_
+#define SHARED_MEMORY_FACTORY_H_
 
 #include <libsmipc/shared-memory/abstract-shared-memory.hpp>
-#include <libsmipc/shared-memory/shared-memory-view.hpp>
 
-#include <cstdint>
-#include <string>
+#include <memory>
 
-class WindowsSharedMemory: public ISharedMemory
-{
-public:
-	void create(const std::string& name, std::size_t size) final;
-	void open(const std::string& name) final;
-	void close() final;
-	void closeAll() final;
-	auto getName() const -> std::string_view final;
-	auto getSize() const -> std::size_t final;
-	auto getView() -> SharedMemoryView final;
-	auto getView() const -> const SharedMemoryView final;
+[[nodiscard]]
+std::unique_ptr<ISharedMemory> MakeUniqueSharedMemory();
 
-private:
-	std::size_t m_size {};
-	std::string m_name {};
-	std::uintptr_t m_handle {};
-	std::byte* m_buffer {nullptr};
-	SharedMemoryView m_view {};
-};
-
-#endif  // WINDOWS_SHARED_MEMORY_H_
+#endif  // SHARED_MEMORY_FACTORY_H_

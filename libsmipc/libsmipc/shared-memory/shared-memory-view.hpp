@@ -21,17 +21,31 @@
  * SOFTWARE.
  */
 
-#ifndef ATOMIC_MEMORY_VIEW_H_
-#define ATOMIC_MEMORY_VIEW_H_
+#ifndef SHARED_MEMORY_VIEW_H_
+#define SHARED_MEMORY_VIEW_H_
 
 #include <atomic>
-#include <span>
+#include <cstdint>
+#include <bitset>
 
-struct AtomicMemoryView
+enum class Signal : uint32_t
+{
+	Close,
+};
+
+struct SharedMemoryView
 {
 	std::atomic_flag* lock {nullptr};
+	uint32_t* refCount {0u};
+	std::bitset<32u>* signals {0u};
 	uint32_t* dataSize {nullptr};
 	std::byte* data {nullptr};
 };
 
-#endif  // ATOMIC_MEMORY_VIEW_H_
+constexpr std::size_t kSharedMemoryViewLockOffset {0u};
+constexpr std::size_t kSharedMemoryViewRefCountOffset {kSharedMemoryViewLockOffset + sizeof(std::remove_pointer_t<decltype(SharedMemoryView::lock)>)};
+constexpr std::size_t kSharedMemoryViewSignalsOffset {kSharedMemoryViewRefCountOffset + sizeof(std::remove_pointer_t<decltype(SharedMemoryView::refCount)>)};
+constexpr std::size_t kSharedMemoryViewDataSizeOffset {kSharedMemoryViewSignalsOffset + sizeof(std::remove_pointer_t<decltype(SharedMemoryView::signals)>)};
+constexpr std::size_t kSharedMemoryViewDataOffset {kSharedMemoryViewDataSizeOffset + sizeof(std::remove_pointer_t<decltype(SharedMemoryView::dataSize)>)};
+
+#endif  // SHARED_MEMORY_VIEW_H_

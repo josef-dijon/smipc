@@ -21,33 +21,23 @@
  * SOFTWARE.
  */
 
-#ifndef WINDOWS_SHARED_MEMORY_H_
-#define WINDOWS_SHARED_MEMORY_H_
+#include <libsmipc/shared-memory/shared-memory-factory.hpp>
 
-#include <libsmipc/shared-memory/abstract-shared-memory.hpp>
-#include <libsmipc/shared-memory/shared-memory-view.hpp>
+#ifdef INTIME
+#	include <libsmipc/shared-memory/intime-shared-memory.hpp>
+#elif _WIN32
+#	include <libsmipc/shared-memory/windows-shared-memory.hpp>
+#elif LINUX
+#	include <libsmipc/shared-memory/posix-shared-memory.hpp>
+#endif
 
-#include <cstdint>
-#include <string>
-
-class WindowsSharedMemory: public ISharedMemory
+std::unique_ptr<ISharedMemory> MakeUniqueSharedMemory()
 {
-public:
-	void create(const std::string& name, std::size_t size) final;
-	void open(const std::string& name) final;
-	void close() final;
-	void closeAll() final;
-	auto getName() const -> std::string_view final;
-	auto getSize() const -> std::size_t final;
-	auto getView() -> SharedMemoryView final;
-	auto getView() const -> const SharedMemoryView final;
-
-private:
-	std::size_t m_size {};
-	std::string m_name {};
-	std::uintptr_t m_handle {};
-	std::byte* m_buffer {nullptr};
-	SharedMemoryView m_view {};
-};
-
-#endif  // WINDOWS_SHARED_MEMORY_H_
+	#ifdef INTIME
+		return std::make_unique<IntimeSharedMemory>();
+	#elif _WIN32
+		return std::make_unique<WindowsSharedMemory>();
+	#elif LINUX
+		return std::make_unique<PosixSharedMemory>();
+	#endif
+}

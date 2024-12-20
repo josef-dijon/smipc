@@ -22,7 +22,6 @@
  */
 
 #include <libsmipc/shared-memory/windows-shared-memory.hpp>
-#include <libsmipc/ring-buffer/atomic-spin-lock.hpp>
 
 #include <algorithm>
 #include <format>
@@ -59,13 +58,19 @@ void WindowsSharedMemory::create(const std::string& name, std::size_t size)
 		throw std::runtime_error(std::format("Failed to map view of file. Error code: {}", errorCode));
 	}
 
-	m_view.lock = reinterpret_cast<std::atomic_flag*>(m_buffer);
+	// Configure and initialise the shared memory view
+	m_view.lock = reinterpret_cast<std::atomic_flag*>(m_buffer + kSharedMemoryViewLockOffset);
+	m_view.lock->clear(std::memory_order_release);
 
 	while (m_view.lock->test_and_set(std::memory_order_acquire));
 
-	m_view.dataSize = reinterpret_cast<uint32_t*>(m_buffer + sizeof(std::atomic_flag));
-	*m_view.dataSize = m_size - sizeof(std::atomic_flag) - sizeof(uint32_t);
-	m_view.data = m_buffer + sizeof(std::atomic_flag) + sizeof(uint32_t);
+	m_view.signals = reinterpret_cast<std::bitset<32u>*>(m_buffer + kSharedMemoryViewSignalsOffset);
+	*m_view.signals = 0u;
+	m_view.refCount = reinterpret_cast<uint32_t*>(m_buffer + kSharedMemoryViewRefCountOffset);
+	*m_view.refCount = 1u;
+	m_view.dataSize = reinterpret_cast<uint32_t*>(m_buffer + kSharedMemoryViewDataSizeOffset);
+	*m_view.dataSize = m_size - kSharedMemoryViewDataOffset;
+	m_view.data = m_buffer + kSharedMemoryViewDataOffset;
 
 	m_view.lock->clear(std::memory_order_release);
 }
@@ -95,13 +100,17 @@ void WindowsSharedMemory::open(const std::string& name)
 		throw std::runtime_error(std::format("Failed to map view of file. Error code: {}", errorCode));
 	}
 
-	m_view.lock = reinterpret_cast<std::atomic_flag*>(m_buffer);
+	// Configure the shared memory view
+	m_view.lock = reinterpret_cast<std::atomic_flag*>(m_buffer + kSharedMemoryViewLockOffset);
 
 	while (m_view.lock->test_and_set(std::memory_order_acquire));
 
-	m_view.dataSize = reinterpret_cast<uint32_t*>(m_buffer + sizeof(std::atomic_flag));
-	m_size = *m_view.dataSize + sizeof(std::atomic_flag) + sizeof(uint32_t);
-	m_view.data = m_buffer + sizeof(std::atomic_flag) + sizeof(uint32_t);
+	m_view.signals = reinterpret_cast<std::bitset<32u>*>(m_buffer + kSharedMemoryViewSignalsOffset);
+	m_view.refCount = reinterpret_cast<uint32_t*>(m_buffer + kSharedMemoryViewRefCountOffset);
+	(*m_view.refCount)++;
+	m_view.dataSize = reinterpret_cast<uint32_t*>(m_buffer + kSharedMemoryViewDataSizeOffset);
+	m_size = *m_view.dataSize + kSharedMemoryViewDataOffset;
+	m_view.data = m_buffer + kSharedMemoryViewDataOffset;
 
 	m_view.lock->clear(std::memory_order_release);
 }
@@ -109,11 +118,45 @@ void WindowsSharedMemory::open(const std::string& name)
 void WindowsSharedMemory::close()
 {
 	while(m_view.lock->test_and_set(std::memory_order_acquire));
-	UnmapViewOfFile(m_buffer);
-	CloseHandle(reinterpret_cast<HANDLE>(m_handle));
-	m_handle = 0u;
-	m_buffer = nullptr;
-	m_view = {};
+
+	if (*m_view.refCount > 0)
+	{
+		--(*m_view.refCount);
+	}
+
+	m_view.lock->clear(std::memory_order_release);
+
+	if (m_buffer)
+	{
+		UnmapViewOfFile(m_buffer);
+		m_buffer = nullptr;
+		m_view = {};
+	}
+
+	if (m_handle)
+	{
+		CloseHandle(reinterpret_cast<HANDLE>(m_handle));
+		m_handle = 0u;
+	}
+}
+
+void WindowsSharedMemory::closeAll()
+{
+	// First close any existing views
+	if (*m_view.refCount > 1)
+	{
+		while (m_view.lock->test_and_set(std::memory_order_acquire));
+		m_view.signals->set(static_cast<uint32_t>(Signal::Close));
+		m_view.lock->clear(std::memory_order_release);
+
+		while (*m_view.refCount > 1)
+		{
+			Sleep(1);
+		}
+	}
+
+	// Now close the shared memory
+	close();
 }
 
 auto WindowsSharedMemory::getName() const -> std::string_view
@@ -126,12 +169,12 @@ auto WindowsSharedMemory::getSize() const -> std::size_t
 	return m_size;
 }
 
-auto WindowsSharedMemory::getView() -> AtomicMemoryView
+auto WindowsSharedMemory::getView() -> SharedMemoryView
 {
 	return m_view;
 }
 
-auto WindowsSharedMemory::getView() const -> const AtomicMemoryView
+auto WindowsSharedMemory::getView() const -> const SharedMemoryView
 {
 	return m_view;
 }

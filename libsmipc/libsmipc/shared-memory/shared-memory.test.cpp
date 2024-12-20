@@ -28,7 +28,7 @@
 TEST(shared_memory_pipe, host_creation)
 {
 	constexpr std::size_t sharedMemorySize {256u};
-	constexpr std::size_t bufferSize {248u};
+	constexpr std::size_t bufferSize {sharedMemorySize - 16u};
 	const auto hostPipe = CreateSharedMemoryPipe<sharedMemorySize>("test-pipe");
 
 	const auto& rxPipe = hostPipe->getRxPipe();
@@ -52,7 +52,7 @@ TEST(shared_memory_pipe, host_creation)
 TEST(shared_memory_pipe, client_creation)
 {
 	constexpr std::size_t sharedMemorySize {256u};
-	constexpr std::size_t bufferSize {248u};
+	constexpr std::size_t bufferSize {sharedMemorySize - 16u};
 	const auto hostPipe = CreateSharedMemoryPipe<sharedMemorySize>("test-pipe");
 	const auto clientPipe = OpenSharedMemoryPipe<sharedMemorySize>("test-pipe");
 

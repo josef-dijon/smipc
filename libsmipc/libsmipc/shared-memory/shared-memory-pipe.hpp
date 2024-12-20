@@ -24,6 +24,7 @@
 #ifndef SHARED_MEMORY_PIPE_H_
 #define SHARED_MEMORY_PIPE_H_
 
+#include <libsmipc/shared-memory/shared-memory-factory.hpp>
 #include <libsmipc/shared-memory/shared-memory-pipe-rx.hpp>
 #include <libsmipc/shared-memory/shared-memory-pipe-tx.hpp>
 #include <libsmipc/ring-buffer/packet.hpp>
@@ -74,10 +75,10 @@ private:
 template <std::size_t NSize>
 inline std::unique_ptr<SharedMemoryPipe<NSize>> CreateSharedMemoryPipe(const std::string& name)
 {
-	auto rxSharedMemory = std::make_unique<WindowsSharedMemory>();
-	rxSharedMemory->create(name + ".rx", NSize);
-	auto txSharedMemory = std::make_unique<WindowsSharedMemory>();
-	txSharedMemory->create(name + ".tx", NSize);
+	auto rxSharedMemory = MakeUniqueSharedMemory();
+	auto txSharedMemory = MakeUniqueSharedMemory();
+	rxSharedMemory->create("smipc://" + name + ".rx", NSize);
+	txSharedMemory->create("smipc://" + name + ".tx", NSize);
 
 	return std::make_unique<SharedMemoryPipe<NSize>>(std::move(rxSharedMemory), std::move(txSharedMemory));
 }
@@ -85,10 +86,10 @@ inline std::unique_ptr<SharedMemoryPipe<NSize>> CreateSharedMemoryPipe(const std
 template <std::size_t NSize>
 inline std::unique_ptr<SharedMemoryPipe<NSize>> OpenSharedMemoryPipe(const std::string& name)
 {
-	auto rxSharedMemory = std::make_unique<WindowsSharedMemory>();
-	rxSharedMemory->open(name + ".rx");
-	auto txSharedMemory = std::make_unique<WindowsSharedMemory>();
-	txSharedMemory->open(name + ".tx");
+	auto rxSharedMemory = MakeUniqueSharedMemory();
+	auto txSharedMemory = MakeUniqueSharedMemory();
+	rxSharedMemory->open("smipc://" + name + ".tx");
+	txSharedMemory->open("smipc://" + name + ".rx");
 
 	return std::make_unique<SharedMemoryPipe<NSize>>(std::move(rxSharedMemory), std::move(txSharedMemory));
 }
