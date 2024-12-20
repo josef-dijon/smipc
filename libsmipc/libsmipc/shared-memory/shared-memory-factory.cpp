@@ -23,21 +23,21 @@
 
 #include <libsmipc/shared-memory/shared-memory-factory.hpp>
 
-#ifdef INTIME
+#ifdef _INTIME
 #	include <libsmipc/shared-memory/platform/intime-shared-memory.hpp>
 #elif _WIN32
 #	include <libsmipc/shared-memory/platform/windows-shared-memory.hpp>
-#elif LINUX
+#elif __linux__
 #	include <libsmipc/shared-memory/platform/posix-shared-memory.hpp>
 #endif
 
 std::unique_ptr<ISharedMemory> MakeUniqueSharedMemory()
 {
-	#ifdef INTIME
+	#ifdef _INTIME
 		return std::make_unique<IntimeSharedMemory>();
 	#elif _WIN32
 		return std::make_unique<WindowsSharedMemory>();
-	#elif LINUX
+	#elif __linux__
 		return std::make_unique<PosixSharedMemory>();
 	#endif
 }
