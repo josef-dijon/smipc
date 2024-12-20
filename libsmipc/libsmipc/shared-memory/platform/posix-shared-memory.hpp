@@ -21,16 +21,17 @@
  * SOFTWARE.
  */
 
-#ifndef WINDOWS_SHARED_MEMORY_H_
-#define WINDOWS_SHARED_MEMORY_H_
+#ifndef POSIX_SHARED_MEMORY_H_
+#define POSIX_SHARED_MEMORY_H_
 
 #include <libsmipc/shared-memory/abstract-shared-memory.hpp>
 #include <libsmipc/shared-memory/shared-memory-view.hpp>
 
 #include <cstdint>
 #include <string>
+#include <string_view>
 
-class WindowsSharedMemory: public ISharedMemory
+class PosixSharedMemory: public ISharedMemory
 {
 public:
 	void create(const std::string& name, std::size_t size) final;
@@ -50,4 +51,4 @@ private:
 	SharedMemoryView m_view {};
 };
 
-#endif  // WINDOWS_SHARED_MEMORY_H_
+#endif  // POSIX_SHARED_MEMORY_H_

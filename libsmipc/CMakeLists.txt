@@ -30,7 +30,9 @@ add_library(
   smipc STATIC
   "${CMAKE_CURRENT_SOURCE_DIR}/libsmipc/ring-buffer/dekkar-lock.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/libsmipc/ring-buffer/atomic-spin-lock.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/libsmipc/$<$<PLATFORM_ID:Windows>:shared-memory/windows-shared-memory.cpp>"
+  "${CMAKE_CURRENT_SOURCE_DIR}/libsmipc/$<$<PLATFORM_ID:Windows>:shared-memory/platform/windows-shared-memory.cpp>"
+  "${CMAKE_CURRENT_SOURCE_DIR}/libsmipc/$<$<PLATFORM_ID:Windows>:shared-memory/platform/intime-shared-memory.cpp>"
+  "${CMAKE_CURRENT_SOURCE_DIR}/libsmipc/$<$<PLATFORM_ID:Linux>:shared-memory/platform/posix-shared-memory.cpp>"
   "${CMAKE_CURRENT_SOURCE_DIR}/libsmipc/shared-memory/shared-memory-factory.cpp"
   #"${CMAKE_CURRENT_SOURCE_DIR}/libsmipc/$<$<PLATFORM_ID:Linux>:shared-memory/posix-shared-memory.cpp>"
   # "${CMAKE_CURRENT_SOURCE_DIR}/shared_memory/client.cpp"

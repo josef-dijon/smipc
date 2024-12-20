@@ -25,7 +25,6 @@
 #define SHARED_MEMORY_PIPE_RX_H_
 
 #include <libsmipc/shared-memory/abstract-shared-memory.hpp>
-#include <libsmipc/shared-memory/windows-shared-memory.hpp>
 #include <libsmipc/ring-buffer/ring-buffer-rx.hpp>
 #include <libsmipc/ring-buffer/packet.hpp>
 

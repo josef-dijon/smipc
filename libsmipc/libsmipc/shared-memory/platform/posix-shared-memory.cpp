@@ -21,16 +21,16 @@
  * SOFTWARE.
  */
 
-#include <libsmipc/shared-memory/windows-shared-memory.hpp>
+#include <libsmipc/shared-memory/platform/posix-shared-memory.hpp>
 
-#include <algorithm>
 #include <format>
-#include <iterator>
 #include <stdexcept>
-#include <windows.h>
 
-void WindowsSharedMemory::create(const std::string& name, std::size_t size)
+static std::byte* tmpBuffer = nullptr;
+
+void PosixSharedMemory::create(const std::string& name, std::size_t size)
 {
+	tmpBuffer = new std::byte[size]();
 	if (m_handle != 0)
 	{
 		throw std::runtime_error("Shared memory already created.");
@@ -39,24 +39,23 @@ void WindowsSharedMemory::create(const std::string& name, std::size_t size)
 	m_name = name;
 	m_size = size;
 
-	const uint32_t low_size {static_cast<uint32_t>(m_size & 0xFFFFFFFF)};
-	const uint32_t high_size {static_cast<uint32_t>((m_size >> 32) & 0xFFFFFFFF)};
+	// 1. Create shared memory mapping using the name as the id
+	m_handle = 1;
 
-	m_handle = reinterpret_cast<std::uintptr_t>(CreateFileMappingA(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, high_size, low_size, m_name.c_str()));
+	// if (reinterpret_cast<HANDLE>(m_handle) == nullptr)
+	// {
+	// 	throw std::runtime_error(std::format("Failed to create file mapping object. Error code: {}", GetLastError()));
+	// }
 
-	if (reinterpret_cast<HANDLE>(m_handle) == nullptr)
-	{
-		throw std::runtime_error(std::format("Failed to create file mapping object. Error code: {}", GetLastError()));
-	}
+	// 2. Create a file mapping of the shared memory
+	m_buffer = tmpBuffer;
 
-	m_buffer = static_cast<std::byte*>(MapViewOfFile(reinterpret_cast<HANDLE>(m_handle), FILE_MAP_ALL_ACCESS, 0, 0, m_size));
-
-	if (m_buffer == nullptr)
-	{
-		const auto errorCode = GetLastError();
-		CloseHandle(reinterpret_cast<HANDLE>(m_handle));
-		throw std::runtime_error(std::format("Failed to map view of file. Error code: {}", errorCode));
-	}
+	// if (m_buffer == nullptr)
+	// {
+	// 	const auto errorCode = GetLastError();
+	// 	CloseHandle(reinterpret_cast<HANDLE>(m_handle));
+	// 	throw std::runtime_error(std::format("Failed to map view of file. Error code: {}", errorCode));
+	// }
 
 	// Configure and initialise the shared memory view
 	m_view.lock = reinterpret_cast<std::atomic_flag*>(m_buffer + kSharedMemoryViewLockOffset);
@@ -75,7 +74,7 @@ void WindowsSharedMemory::create(const std::string& name, std::size_t size)
 	m_view.lock->clear(std::memory_order_release);
 }
 
-void WindowsSharedMemory::open(const std::string& name)
+void PosixSharedMemory::open(const std::string& name)
 {
 	if (m_handle != 0)
 	{
@@ -84,21 +83,23 @@ void WindowsSharedMemory::open(const std::string& name)
 
 	m_name = name;
 
-	m_handle = reinterpret_cast<std::uintptr_t>(OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, m_name.c_str()));
+	// 1. Open shared memory mapping using the name as the id
+	m_handle = 1;
 
-	if (reinterpret_cast<HANDLE>(m_handle) == nullptr)
-	{
-		throw std::runtime_error(std::format("Failed to open file mapping object. Error code: {}", GetLastError()));
-	}
+	// if (reinterpret_cast<HANDLE>(m_handle) == nullptr)
+	// {
+	// 	throw std::runtime_error(std::format("Failed to open file mapping object. Error code: {}", GetLastError()));
+	// }
 
-	m_buffer = static_cast<std::byte*>(MapViewOfFile(reinterpret_cast<HANDLE>(m_handle), FILE_MAP_ALL_ACCESS, 0, 0, m_size));
-
-	if (m_buffer == nullptr)
-	{
-		const auto errorCode = GetLastError();
-		CloseHandle(reinterpret_cast<HANDLE>(m_handle));
-		throw std::runtime_error(std::format("Failed to map view of file. Error code: {}", errorCode));
-	}
+	// 2. Create a file mapping of the shared memory
+	m_buffer = tmpBuffer;
+	
+	// if (m_buffer == nullptr)
+	// {
+	// 	const auto errorCode = GetLastError();
+	// 	CloseHandle(reinterpret_cast<HANDLE>(m_handle));
+	// 	throw std::runtime_error(std::format("Failed to map view of file. Error code: {}", errorCode));
+	// }
 
 	// Configure the shared memory view
 	m_view.lock = reinterpret_cast<std::atomic_flag*>(m_buffer + kSharedMemoryViewLockOffset);
@@ -115,7 +116,7 @@ void WindowsSharedMemory::open(const std::string& name)
 	m_view.lock->clear(std::memory_order_release);
 }
 
-void WindowsSharedMemory::close()
+void PosixSharedMemory::close()
 {
 	while(m_view.lock->test_and_set(std::memory_order_acquire));
 
@@ -128,19 +129,20 @@ void WindowsSharedMemory::close()
 
 	if (m_buffer)
 	{
-		UnmapViewOfFile(m_buffer);
+		//UnmapViewOfFile(m_buffer);
+		delete[] tmpBuffer;
 		m_buffer = nullptr;
 		m_view = {};
 	}
 
 	if (m_handle)
 	{
-		CloseHandle(reinterpret_cast<HANDLE>(m_handle));
+		// CloseHandle(reinterpret_cast<HANDLE>(m_handle));
 		m_handle = 0u;
 	}
 }
 
-void WindowsSharedMemory::closeAll()
+void PosixSharedMemory::closeAll()
 {
 	// First close any existing views
 	if (*m_view.refCount > 1)
@@ -151,7 +153,7 @@ void WindowsSharedMemory::closeAll()
 
 		while (*m_view.refCount > 1)
 		{
-			Sleep(1);
+			// sleep 1
 		}
 	}
 
@@ -159,22 +161,22 @@ void WindowsSharedMemory::closeAll()
 	close();
 }
 
-auto WindowsSharedMemory::getName() const -> std::string_view
+auto PosixSharedMemory::getName() const -> std::string_view
 {
 	return m_name;
 }
 
-auto WindowsSharedMemory::getSize() const -> std::size_t
+auto PosixSharedMemory::getSize() const -> std::size_t
 {
 	return m_size;
 }
 
-auto WindowsSharedMemory::getView() -> SharedMemoryView
+auto PosixSharedMemory::getView() -> SharedMemoryView
 {
 	return m_view;
 }
 
-auto WindowsSharedMemory::getView() const -> const SharedMemoryView
+auto PosixSharedMemory::getView() const -> const SharedMemoryView
 {
 	return m_view;
 }

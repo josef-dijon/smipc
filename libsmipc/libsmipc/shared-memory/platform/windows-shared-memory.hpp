@@ -21,48 +21,34 @@
  * SOFTWARE.
  */
 
-#ifndef SHARED_MEMORY_PIPE_TX_H_
-#define SHARED_MEMORY_PIPE_TX_H_
+#ifndef WINDOWS_SHARED_MEMORY_H_
+#define WINDOWS_SHARED_MEMORY_H_
 
 #include <libsmipc/shared-memory/abstract-shared-memory.hpp>
-#include <libsmipc/ring-buffer/ring-buffer-tx.hpp>
-#include <libsmipc/ring-buffer/packet.hpp>
+#include <libsmipc/shared-memory/shared-memory-view.hpp>
 
-#include <memory>
-#include <string>
 #include <cstdint>
+#include <string>
+#include <string_view>
 
-template <std::size_t NSize>
-class SharedMemoryPipeTx
+class WindowsSharedMemory: public ISharedMemory
 {
 public:
-	SharedMemoryPipeTx(std::unique_ptr<ISharedMemory>&& sharedMemory)
-		: m_sharedMemory {std::move(sharedMemory)}
-		, m_ringBuffer {reinterpret_cast<uint8_t*>(m_sharedMemory->getView().data)}
-	{}
-
-	~SharedMemoryPipeTx()
-	{
-		m_sharedMemory->close();
-	}
-
-	void write(const Packet& packet) {
-		m_ringBuffer.push(packet);
-	}
-
-	auto getSharedMemory() const -> const ISharedMemory*
-	{
-		return m_sharedMemory.get();
-	}
-
-	auto getRingBuffer() const -> const RingBufferTx<NSize>*
-	{
-		return &m_ringBuffer;
-	}
+	void create(const std::string& name, std::size_t size) final;
+	void open(const std::string& name) final;
+	void close() final;
+	void closeAll() final;
+	auto getName() const -> std::string_view final;
+	auto getSize() const -> std::size_t final;
+	auto getView() -> SharedMemoryView final;
+	auto getView() const -> const SharedMemoryView final;
 
 private:
-	std::unique_ptr<ISharedMemory> m_sharedMemory;
-	RingBufferTx<NSize> m_ringBuffer;
+	std::size_t m_size {};
+	std::string m_name {};
+	std::uintptr_t m_handle {};
+	std::byte* m_buffer {nullptr};
+	SharedMemoryView m_view {};
 };
 
-#endif  // SHARED_MEMORY_PIPE_TX_H_
+#endif  // WINDOWS_SHARED_MEMORY_H_
