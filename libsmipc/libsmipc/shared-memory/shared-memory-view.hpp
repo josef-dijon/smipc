@@ -21,33 +21,31 @@
  * SOFTWARE.
  */
 
-#ifndef WINDOWS_SHARED_MEMORY_H_
-#define WINDOWS_SHARED_MEMORY_H_
+#ifndef SHARED_MEMORY_VIEW_H_
+#define SHARED_MEMORY_VIEW_H_
 
-#include <libsmipc/shared-memory/abstract-shared-memory.hpp>
-#include <libsmipc/shared-memory/shared-memory-view.hpp>
-
+#include <atomic>
 #include <cstdint>
-#include <string>
+#include <bitset>
 
-class WindowsSharedMemory: public ISharedMemory
+enum class Signal : uint32_t
 {
-public:
-	void create(const std::string& name, std::size_t size) final;
-	void open(const std::string& name) final;
-	void close() final;
-	void closeAll() final;
-	auto getName() const -> std::string_view final;
-	auto getSize() const -> std::size_t final;
-	auto getView() -> SharedMemoryView final;
-	auto getView() const -> const SharedMemoryView final;
-
-private:
-	std::size_t m_size {};
-	std::string m_name {};
-	std::uintptr_t m_handle {};
-	std::byte* m_buffer {nullptr};
-	SharedMemoryView m_view {};
+	Close,
 };
 
-#endif  // WINDOWS_SHARED_MEMORY_H_
+struct SharedMemoryView
+{
+	std::atomic_flag* lock {nullptr};
+	uint32_t* refCount {0u};
+	std::bitset<32u>* signals {0u};
+	uint32_t* dataSize {nullptr};
+	std::byte* data {nullptr};
+};
+
+constexpr std::size_t kSharedMemoryViewLockOffset {offsetof(SharedMemoryView, lock)};
+constexpr std::size_t kSharedMemoryViewRefCountOffset {offsetof(SharedMemoryView, refCount)};
+constexpr std::size_t kSharedMemoryViewSignalsOffset {offsetof(SharedMemoryView, signals)};
+constexpr std::size_t kSharedMemoryViewDataSizeOffset {offsetof(SharedMemoryView, dataSize)};
+constexpr std::size_t kSharedMemoryViewDataOffset {offsetof(SharedMemoryView, data)};
+
+#endif  // SHARED_MEMORY_VIEW_H_

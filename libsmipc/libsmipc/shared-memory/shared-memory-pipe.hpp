@@ -75,9 +75,9 @@ template <std::size_t NSize>
 inline std::unique_ptr<SharedMemoryPipe<NSize>> CreateSharedMemoryPipe(const std::string& name)
 {
 	auto rxSharedMemory = std::make_unique<WindowsSharedMemory>();
-	rxSharedMemory->create(name + ".rx", NSize);
+	rxSharedMemory->create("smipc://" + name + ".rx", NSize);
 	auto txSharedMemory = std::make_unique<WindowsSharedMemory>();
-	txSharedMemory->create(name + ".tx", NSize);
+	txSharedMemory->create("smipc://" + name + ".tx", NSize);
 
 	return std::make_unique<SharedMemoryPipe<NSize>>(std::move(rxSharedMemory), std::move(txSharedMemory));
 }
@@ -86,9 +86,9 @@ template <std::size_t NSize>
 inline std::unique_ptr<SharedMemoryPipe<NSize>> OpenSharedMemoryPipe(const std::string& name)
 {
 	auto rxSharedMemory = std::make_unique<WindowsSharedMemory>();
-	rxSharedMemory->open(name + ".rx");
+	rxSharedMemory->open("smipc://" + name + ".tx");
 	auto txSharedMemory = std::make_unique<WindowsSharedMemory>();
-	txSharedMemory->open(name + ".tx");
+	txSharedMemory->open("smipc://" + name + ".rx");
 
 	return std::make_unique<SharedMemoryPipe<NSize>>(std::move(rxSharedMemory), std::move(txSharedMemory));
 }

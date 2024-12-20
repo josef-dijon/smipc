@@ -21,17 +21,23 @@
  * SOFTWARE.
  */
 
-#ifndef ATOMIC_MEMORY_VIEW_H_
-#define ATOMIC_MEMORY_VIEW_H_
+#include <libsmipc/shared-memory/shared-memory-factory.hpp>
 
-#include <atomic>
-#include <span>
+#ifdef INTIME
+#	include <libsmipc/shared-memory/intime-shared-memory.hpp>
+#elif _WIN32
+#	include <libsmipc/shared-memory/windows-shared-memory.hpp>
+#elif LINUX
+#	include <libsmipc/shared-memory/posix-shared-memory.hpp>
+#endif
 
-struct AtomicMemoryView
+std::unique_ptr<ISharedMemory> MakeUniqueSharedMemory()
 {
-	std::atomic_flag* lock {nullptr};
-	uint32_t* dataSize {nullptr};
-	std::byte* data {nullptr};
-};
-
-#endif  // ATOMIC_MEMORY_VIEW_H_
+	#ifdef INTIME
+		auto sharedMemory = std::make_unique<IntimeSharedMemory>();
+	#elif _WIN32
+		auto sharedMemory = std::make_unique<WindowsSharedMemory>();
+	#elif LINUX
+		auto sharedMemory = std::make_unique<PosixSharedMemory>();
+	#endif
+}
