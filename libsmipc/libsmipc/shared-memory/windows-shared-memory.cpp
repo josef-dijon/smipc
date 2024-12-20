@@ -109,7 +109,7 @@ void WindowsSharedMemory::open(const std::string& name)
 	m_view.refCount = reinterpret_cast<uint32_t*>(m_buffer + kSharedMemoryViewRefCountOffset);
 	(*m_view.refCount)++;
 	m_view.dataSize = reinterpret_cast<uint32_t*>(m_buffer + kSharedMemoryViewDataSizeOffset);
-	m_size = *m_view.dataSize;
+	m_size = *m_view.dataSize + kSharedMemoryViewDataOffset;
 	m_view.data = m_buffer + kSharedMemoryViewDataOffset;
 
 	m_view.lock->clear(std::memory_order_release);

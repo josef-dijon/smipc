@@ -42,10 +42,10 @@ struct SharedMemoryView
 	std::byte* data {nullptr};
 };
 
-constexpr std::size_t kSharedMemoryViewLockOffset {offsetof(SharedMemoryView, lock)};
-constexpr std::size_t kSharedMemoryViewRefCountOffset {offsetof(SharedMemoryView, refCount)};
-constexpr std::size_t kSharedMemoryViewSignalsOffset {offsetof(SharedMemoryView, signals)};
-constexpr std::size_t kSharedMemoryViewDataSizeOffset {offsetof(SharedMemoryView, dataSize)};
-constexpr std::size_t kSharedMemoryViewDataOffset {offsetof(SharedMemoryView, data)};
+constexpr std::size_t kSharedMemoryViewLockOffset {0u};
+constexpr std::size_t kSharedMemoryViewRefCountOffset {kSharedMemoryViewLockOffset + sizeof(std::remove_pointer_t<decltype(SharedMemoryView::lock)>)};
+constexpr std::size_t kSharedMemoryViewSignalsOffset {kSharedMemoryViewRefCountOffset + sizeof(std::remove_pointer_t<decltype(SharedMemoryView::refCount)>)};
+constexpr std::size_t kSharedMemoryViewDataSizeOffset {kSharedMemoryViewSignalsOffset + sizeof(std::remove_pointer_t<decltype(SharedMemoryView::signals)>)};
+constexpr std::size_t kSharedMemoryViewDataOffset {kSharedMemoryViewDataSizeOffset + sizeof(std::remove_pointer_t<decltype(SharedMemoryView::dataSize)>)};
 
 #endif  // SHARED_MEMORY_VIEW_H_

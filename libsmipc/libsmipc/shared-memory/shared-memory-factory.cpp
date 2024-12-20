@@ -34,10 +34,10 @@
 std::unique_ptr<ISharedMemory> MakeUniqueSharedMemory()
 {
 	#ifdef INTIME
-		auto sharedMemory = std::make_unique<IntimeSharedMemory>();
+		return std::make_unique<IntimeSharedMemory>();
 	#elif _WIN32
-		auto sharedMemory = std::make_unique<WindowsSharedMemory>();
+		return std::make_unique<WindowsSharedMemory>();
 	#elif LINUX
-		auto sharedMemory = std::make_unique<PosixSharedMemory>();
+		return std::make_unique<PosixSharedMemory>();
 	#endif
 }
