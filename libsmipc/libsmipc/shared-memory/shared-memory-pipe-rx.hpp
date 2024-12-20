@@ -39,18 +39,16 @@ class SharedMemoryPipeRx
 public:
 	SharedMemoryPipeRx(std::unique_ptr<ISharedMemory>&& sharedMemory)
 		: m_sharedMemory {std::move(sharedMemory)}
-	{
-		m_ringBuffer = reinterpret_cast<RingBufferRx<NSize>*>(m_sharedMemory->getView().data);
-	}
+		, m_ringBuffer {reinterpret_cast<uint8_t*>(m_sharedMemory->getView().data)}
+	{}
 
 	~SharedMemoryPipeRx() 
 	{
 		m_sharedMemory->close();
-		m_ringBuffer = nullptr;
 	}
 
 	auto read() -> Packet {
-		return m_ringBuffer->pull();
+		return m_ringBuffer.pull();
 	}
 
 	auto getSharedMemory() const -> const ISharedMemory*
@@ -60,12 +58,12 @@ public:
 
 	auto getRingBuffer() const -> const RingBufferRx<NSize>*
 	{
-		return m_ringBuffer;
+		return &m_ringBuffer;
 	}
 
 private:
 	std::unique_ptr<ISharedMemory> m_sharedMemory;
-	RingBufferRx<NSize>* m_ringBuffer;
+	RingBufferRx<NSize> m_ringBuffer;
 };
 
 #endif  // SHARED_MEMORY_PIPE_RX_H_
