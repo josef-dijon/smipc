@@ -23,14 +23,16 @@
 
 #include <libsmipc/shared-memory/platform/posix-shared-memory.hpp>
 
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 #include <format>
 #include <stdexcept>
 
-static std::byte* tmpBuffer = nullptr;
-
 void PosixSharedMemory::create(const std::string& name, std::size_t size)
 {
-	tmpBuffer = new std::byte[size]();
 	if (m_handle != 0)
 	{
 		throw std::runtime_error("Shared memory already created.");
@@ -40,22 +42,24 @@ void PosixSharedMemory::create(const std::string& name, std::size_t size)
 	m_size = size;
 
 	// 1. Create shared memory mapping using the name as the id
-	m_handle = 1;
+	m_handle = shm_open(m_name.c_str(), O_CREAT | O_RDWR | O_EXCL, S_IRUSR | S_IWUSR);
 
-	// if (reinterpret_cast<HANDLE>(m_handle) == nullptr)
-	// {
-	// 	throw std::runtime_error(std::format("Failed to create file mapping object. Error code: {}", GetLastError()));
-	// }
+	if (m_handle == -1)
+	{
+	 	throw std::runtime_error(std::format("Failed to create file mapping object. Errno: {}", errno));
+	}
 
 	// 2. Create a file mapping of the shared memory
-	m_buffer = tmpBuffer;
+	auto buffer = mmap(nullptr, m_size, PROT_READ | PROT_WRITE, MAP_SHARED, m_handle, 0);
 
-	// if (m_buffer == nullptr)
-	// {
-	// 	const auto errorCode = GetLastError();
-	// 	CloseHandle(reinterpret_cast<HANDLE>(m_handle));
-	// 	throw std::runtime_error(std::format("Failed to map view of file. Error code: {}", errorCode));
-	// }
+	if (reinterpret_cast<intptr_t>(buffer) == -1)
+	{
+		shm_unlink(m_name.c_str());
+		m_handle = 0u;
+		throw std::runtime_error(std::format("Failed to map view of file. Errno: {}", errno));
+	}
+
+	m_buffer = reinterpret_cast<std::byte*>(buffer);
 
 	// Configure and initialise the shared memory view
 	m_view.lock = reinterpret_cast<std::atomic_flag*>(m_buffer + kSharedMemoryViewLockOffset);
@@ -84,22 +88,41 @@ void PosixSharedMemory::open(const std::string& name)
 	m_name = name;
 
 	// 1. Open shared memory mapping using the name as the id
-	m_handle = 1;
+	m_handle = shm_open(m_name.c_str(), O_RDWR | O_EXCL, S_IRUSR | S_IWUSR);
 
-	// if (reinterpret_cast<HANDLE>(m_handle) == nullptr)
-	// {
-	// 	throw std::runtime_error(std::format("Failed to open file mapping object. Error code: {}", GetLastError()));
-	// }
+	if (m_handle == -1)
+	{
+		throw std::runtime_error(std::format("Failed to open file mapping object. Errno: {}", errno));
+	}
+
+	// Initially mmap just enough to read the header and get the size
+	auto tmp_buffer = mmap(nullptr, kSharedMemoryViewDataOffset, PROT_READ | PROT_WRITE, MAP_SHARED, m_handle, 0);
+
+	if (reinterpret_cast<intptr_t>(tmp_buffer) == -1)
+	{
+		shm_unlink(m_name.c_str());
+		m_handle = 0u;
+		throw std::runtime_error(std::format("Failed to map view of file. Errno: {}", errno));
+	}
+
+	m_size = *reinterpret_cast<uint32_t*>(reinterpret_cast<std::byte*>(tmp_buffer) + kSharedMemoryViewDataSizeOffset) + kSharedMemoryViewDataOffset;
+
+	if (munmap(tmp_buffer, m_size) == -1)
+	{
+		throw std::runtime_error(std::format("Failed to unmap view of file. Errno: {}", errno));
+	}
 
 	// 2. Create a file mapping of the shared memory
-	m_buffer = tmpBuffer;
+	auto buffer = mmap(nullptr, m_size, PROT_READ | PROT_WRITE, MAP_SHARED, m_handle, 0);
 	
-	// if (m_buffer == nullptr)
-	// {
-	// 	const auto errorCode = GetLastError();
-	// 	CloseHandle(reinterpret_cast<HANDLE>(m_handle));
-	// 	throw std::runtime_error(std::format("Failed to map view of file. Error code: {}", errorCode));
-	// }
+	if (reinterpret_cast<intptr_t>(buffer) == -1)
+	{
+		shm_unlink(m_name.c_str());
+		m_handle = 0u;
+		throw std::runtime_error(std::format("Failed to map view of file. Errno: {}", errno));
+	}
+
+	m_buffer = reinterpret_cast<std::byte*>(buffer);
 
 	// Configure the shared memory view
 	m_view.lock = reinterpret_cast<std::atomic_flag*>(m_buffer + kSharedMemoryViewLockOffset);
@@ -110,7 +133,6 @@ void PosixSharedMemory::open(const std::string& name)
 	m_view.refCount = reinterpret_cast<uint32_t*>(m_buffer + kSharedMemoryViewRefCountOffset);
 	(*m_view.refCount)++;
 	m_view.dataSize = reinterpret_cast<uint32_t*>(m_buffer + kSharedMemoryViewDataSizeOffset);
-	m_size = *m_view.dataSize + kSharedMemoryViewDataOffset;
 	m_view.data = m_buffer + kSharedMemoryViewDataOffset;
 
 	m_view.lock->clear(std::memory_order_release);
@@ -129,15 +151,22 @@ void PosixSharedMemory::close()
 
 	if (m_buffer)
 	{
-		//UnmapViewOfFile(m_buffer);
-		delete[] tmpBuffer;
+		if (munmap(m_buffer, m_size) == -1)
+		{
+			throw std::runtime_error(std::format("Failed to unmap view of file. Errno: {}", errno));
+		}
+
 		m_buffer = nullptr;
 		m_view = {};
 	}
 
 	if (m_handle)
 	{
-		// CloseHandle(reinterpret_cast<HANDLE>(m_handle));
+		if (shm_unlink(m_name.c_str()))
+		{
+			throw std::runtime_error(std::format("Failed to unlink shared memory file. Errno: {}", errno));
+		}
+
 		m_handle = 0u;
 	}
 }
@@ -153,7 +182,7 @@ void PosixSharedMemory::closeAll()
 
 		while (*m_view.refCount > 1)
 		{
-			// sleep 1
+			usleep(1000);
 		}
 	}
 

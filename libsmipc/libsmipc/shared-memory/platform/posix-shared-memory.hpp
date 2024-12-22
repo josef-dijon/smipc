@@ -46,7 +46,7 @@ public:
 private:
 	std::size_t m_size {};
 	std::string m_name {};
-	std::uintptr_t m_handle {};
+	int m_handle {};
 	std::byte* m_buffer {nullptr};
 	SharedMemoryView m_view {};
 };
