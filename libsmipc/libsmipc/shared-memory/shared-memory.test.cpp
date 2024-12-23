@@ -25,24 +25,34 @@
 
 #include <gtest/gtest.h>
 
+#include <iostream>
+
 TEST(shared_memory_pipe, host_creation)
 {
-	constexpr std::size_t sharedMemorySize {256u};
-	constexpr std::size_t bufferSize {sharedMemorySize - 16u};
-	const auto hostPipe = CreateSharedMemoryPipe<sharedMemorySize>("test-pipe");
+	constexpr std::size_t kSharedMemorySize {256u};
+	constexpr std::size_t bufferSize {kSharedMemorySize - kSharedMemoryViewDataOffset};
+	const auto hostPipe = CreateSharedMemoryPipe<kSharedMemorySize>("test-pipe");
 
 	const auto& rxPipe = hostPipe->getRxPipe();
 	const auto& txPipe = hostPipe->getTxPipe();
 
-	EXPECT_STREQ(rxPipe.getSharedMemory()->getName().data(), "smipc://test-pipe.rx");
-	EXPECT_EQ(rxPipe.getSharedMemory()->getSize(), sharedMemorySize);
+	EXPECT_STREQ(rxPipe.getSharedMemory()->getName().data(), "/smipc.test-pipe.rx");
+	EXPECT_EQ(rxPipe.getSharedMemory()->getSize(), kSharedMemorySize);
+	EXPECT_NE(rxPipe.getSharedMemory()->getView().refCount, nullptr);
+	EXPECT_EQ(*rxPipe.getSharedMemory()->getView().refCount, 1);
+	EXPECT_NE(rxPipe.getSharedMemory()->getView().signals, nullptr);
+	EXPECT_EQ(rxPipe.getSharedMemory()->getView().signals->to_ulong(), 0);
 	EXPECT_NE(rxPipe.getSharedMemory()->getView().dataSize, nullptr);
 	EXPECT_EQ(*rxPipe.getSharedMemory()->getView().dataSize, bufferSize);
 	EXPECT_NE(rxPipe.getSharedMemory()->getView().lock, nullptr);
 	EXPECT_NE(rxPipe.getSharedMemory()->getView().data, nullptr);
 
-	EXPECT_STREQ(txPipe.getSharedMemory()->getName().data(), "smipc://test-pipe.tx");
-	EXPECT_EQ(txPipe.getSharedMemory()->getSize(), sharedMemorySize);
+	EXPECT_STREQ(txPipe.getSharedMemory()->getName().data(), "/smipc.test-pipe.tx");
+	EXPECT_EQ(txPipe.getSharedMemory()->getSize(), kSharedMemorySize);
+	EXPECT_NE(txPipe.getSharedMemory()->getView().refCount, nullptr);
+	EXPECT_EQ(*txPipe.getSharedMemory()->getView().refCount, 1);
+	EXPECT_NE(txPipe.getSharedMemory()->getView().signals, nullptr);
+	EXPECT_EQ(txPipe.getSharedMemory()->getView().signals->to_ulong(), 0);
 	EXPECT_NE(txPipe.getSharedMemory()->getView().dataSize, nullptr);
 	EXPECT_EQ(*txPipe.getSharedMemory()->getView().dataSize, bufferSize);
 	EXPECT_NE(txPipe.getSharedMemory()->getView().lock, nullptr);
@@ -51,23 +61,31 @@ TEST(shared_memory_pipe, host_creation)
 
 TEST(shared_memory_pipe, client_creation)
 {
-	constexpr std::size_t sharedMemorySize {256u};
-	constexpr std::size_t bufferSize {sharedMemorySize - 16u};
-	const auto hostPipe = CreateSharedMemoryPipe<sharedMemorySize>("test-pipe");
-	const auto clientPipe = OpenSharedMemoryPipe<sharedMemorySize>("test-pipe");
+	constexpr std::size_t kSharedMemorySize {256u};
+	constexpr std::size_t bufferSize {kSharedMemorySize - kSharedMemoryViewDataOffset};
+	const auto hostPipe = CreateSharedMemoryPipe<kSharedMemorySize>("test-pipe");
+	const auto clientPipe = OpenSharedMemoryPipe<kSharedMemorySize>("test-pipe");
 
 	const auto& rxPipe = clientPipe->getRxPipe();
 	const auto& txPipe = clientPipe->getTxPipe();
 
-	EXPECT_STREQ(rxPipe.getSharedMemory()->getName().data(), "smipc://test-pipe.tx");
-	EXPECT_EQ(rxPipe.getSharedMemory()->getSize(), sharedMemorySize);
+	EXPECT_STREQ(rxPipe.getSharedMemory()->getName().data(), "/smipc.test-pipe.tx");
+	EXPECT_EQ(rxPipe.getSharedMemory()->getSize(), kSharedMemorySize);
+	EXPECT_NE(rxPipe.getSharedMemory()->getView().refCount, nullptr);
+	EXPECT_EQ(*rxPipe.getSharedMemory()->getView().refCount, 2);
+	EXPECT_NE(rxPipe.getSharedMemory()->getView().signals, nullptr);
+	EXPECT_EQ(rxPipe.getSharedMemory()->getView().signals->to_ulong(), 0);
 	EXPECT_NE(rxPipe.getSharedMemory()->getView().dataSize, nullptr);
 	EXPECT_EQ(*rxPipe.getSharedMemory()->getView().dataSize, bufferSize);
 	EXPECT_NE(rxPipe.getSharedMemory()->getView().lock, nullptr);
 	EXPECT_NE(rxPipe.getSharedMemory()->getView().data, nullptr);
 
-	EXPECT_STREQ(txPipe.getSharedMemory()->getName().data(), "smipc://test-pipe.rx");
-	EXPECT_EQ(txPipe.getSharedMemory()->getSize(), sharedMemorySize);
+	EXPECT_STREQ(txPipe.getSharedMemory()->getName().data(), "/smipc.test-pipe.rx");
+	EXPECT_EQ(txPipe.getSharedMemory()->getSize(), kSharedMemorySize);
+	EXPECT_NE(txPipe.getSharedMemory()->getView().refCount, nullptr);
+	EXPECT_EQ(*txPipe.getSharedMemory()->getView().refCount, 2);
+	EXPECT_NE(txPipe.getSharedMemory()->getView().signals, nullptr);
+	EXPECT_EQ(txPipe.getSharedMemory()->getView().signals->to_ulong(), 0);
 	EXPECT_NE(txPipe.getSharedMemory()->getView().dataSize, nullptr);
 	EXPECT_EQ(*txPipe.getSharedMemory()->getView().dataSize, bufferSize);
 	EXPECT_NE(txPipe.getSharedMemory()->getView().lock, nullptr);
@@ -76,9 +94,25 @@ TEST(shared_memory_pipe, client_creation)
 
 TEST(shared_memory_pipe, basic_rx_tx)
 {
-	constexpr std::size_t sharedMemorySize {256u};
-	const auto hostPipe = CreateSharedMemoryPipe<sharedMemorySize>("test-pipe");
-	const auto clientPipe = OpenSharedMemoryPipe<sharedMemorySize>("test-pipe");
+	constexpr std::size_t kSharedMemorySize {256u};
+	const auto hostPipe = CreateSharedMemoryPipe<kSharedMemorySize>("test-pipe");
+	const auto clientPipe = OpenSharedMemoryPipe<kSharedMemorySize>("test-pipe");
+
+	{
+		const auto& rxPipe = hostPipe->getRxPipe();
+		const auto& txPipe = hostPipe->getTxPipe();
+
+		EXPECT_EQ(*rxPipe.getSharedMemory()->getView().refCount, 2);
+		EXPECT_EQ(*txPipe.getSharedMemory()->getView().refCount, 2);
+	}
+
+	{
+		const auto& rxPipe = clientPipe->getRxPipe();
+		const auto& txPipe = clientPipe->getTxPipe();
+
+		EXPECT_EQ(*rxPipe.getSharedMemory()->getView().refCount, 2);
+		EXPECT_EQ(*txPipe.getSharedMemory()->getView().refCount, 2);
+	}
 
 	Packet packet {std::vector<uint8_t>({1u, 2u, 3u, 4u, 5u})};
 

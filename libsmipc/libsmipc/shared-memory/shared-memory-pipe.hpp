@@ -1,17 +1,17 @@
 /* MIT License
- * 
+ *
  * Copyright (c) 2024 Josef de Joanelli (josef@pixelrift.io)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,15 +24,14 @@
 #ifndef SHARED_MEMORY_PIPE_H_
 #define SHARED_MEMORY_PIPE_H_
 
+#include <libsmipc/ring-buffer/packet.hpp>
 #include <libsmipc/shared-memory/shared-memory-factory.hpp>
 #include <libsmipc/shared-memory/shared-memory-pipe-rx.hpp>
 #include <libsmipc/shared-memory/shared-memory-pipe-tx.hpp>
-#include <libsmipc/ring-buffer/packet.hpp>
 
+#include <cstdint>
 #include <memory>
 #include <string>
-#include <cstdint>
-
 
 template <std::size_t NSize>
 class SharedMemoryPipe
@@ -77,8 +76,8 @@ inline std::unique_ptr<SharedMemoryPipe<NSize>> CreateSharedMemoryPipe(const std
 {
 	auto rxSharedMemory = MakeUniqueSharedMemory();
 	auto txSharedMemory = MakeUniqueSharedMemory();
-	rxSharedMemory->create("smipc://" + name + ".rx", NSize);
-	txSharedMemory->create("smipc://" + name + ".tx", NSize);
+	rxSharedMemory->create("/smipc." + name + ".rx", NSize);
+	txSharedMemory->create("/smipc." + name + ".tx", NSize);
 
 	return std::make_unique<SharedMemoryPipe<NSize>>(std::move(rxSharedMemory), std::move(txSharedMemory));
 }
@@ -88,8 +87,8 @@ inline std::unique_ptr<SharedMemoryPipe<NSize>> OpenSharedMemoryPipe(const std::
 {
 	auto rxSharedMemory = MakeUniqueSharedMemory();
 	auto txSharedMemory = MakeUniqueSharedMemory();
-	rxSharedMemory->open("smipc://" + name + ".tx");
-	txSharedMemory->open("smipc://" + name + ".rx");
+	rxSharedMemory->open("/smipc." + name + ".tx");
+	txSharedMemory->open("/smipc." + name + ".rx");
 
 	return std::make_unique<SharedMemoryPipe<NSize>>(std::move(rxSharedMemory), std::move(txSharedMemory));
 }

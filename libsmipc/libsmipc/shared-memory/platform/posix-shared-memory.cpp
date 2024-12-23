@@ -1,17 +1,17 @@
 /* MIT License
- * 
+ *
  * Copyright (c) 2024 Josef de Joanelli (josef@pixelrift.io)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -42,12 +42,14 @@ void PosixSharedMemory::create(const std::string& name, std::size_t size)
 	m_size = size;
 
 	// 1. Create shared memory mapping using the name as the id
-	m_handle = shm_open(m_name.c_str(), O_CREAT | O_RDWR | O_EXCL, S_IRUSR | S_IWUSR);
+	m_handle = shm_open(m_name.c_str(), O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
 
 	if (m_handle == -1)
 	{
-	 	throw std::runtime_error(std::format("Failed to create file mapping object. Errno: {}", errno));
+		throw std::runtime_error(std::format("Failed to create file mapping object. Errno: {}", errno));
 	}
+
+	ftruncate(m_handle, m_size);
 
 	// 2. Create a file mapping of the shared memory
 	auto buffer = mmap(nullptr, m_size, PROT_READ | PROT_WRITE, MAP_SHARED, m_handle, 0);
@@ -114,7 +116,7 @@ void PosixSharedMemory::open(const std::string& name)
 
 	// 2. Create a file mapping of the shared memory
 	auto buffer = mmap(nullptr, m_size, PROT_READ | PROT_WRITE, MAP_SHARED, m_handle, 0);
-	
+
 	if (reinterpret_cast<intptr_t>(buffer) == -1)
 	{
 		shm_unlink(m_name.c_str());
@@ -140,7 +142,7 @@ void PosixSharedMemory::open(const std::string& name)
 
 void PosixSharedMemory::close()
 {
-	while(m_view.lock->test_and_set(std::memory_order_acquire));
+	while (m_view.lock->test_and_set(std::memory_order_acquire));
 
 	if (*m_view.refCount > 0)
 	{
@@ -160,11 +162,15 @@ void PosixSharedMemory::close()
 		m_view = {};
 	}
 
-	if (m_handle)
+	if (m_handle > 0)
 	{
 		if (shm_unlink(m_name.c_str()))
 		{
-			throw std::runtime_error(std::format("Failed to unlink shared memory file. Errno: {}", errno));
+			// I wouldn't expect the file to be missing here, will need to investigate further
+			if (errno != ENOENT)
+			{
+				throw std::runtime_error(std::format("Failed to unlink shared memory file. Errno: {}", errno));
+			}
 		}
 
 		m_handle = 0u;
@@ -173,17 +179,14 @@ void PosixSharedMemory::close()
 
 void PosixSharedMemory::closeAll()
 {
-	// First close any existing views
-	if (*m_view.refCount > 1)
-	{
-		while (m_view.lock->test_and_set(std::memory_order_acquire));
-		m_view.signals->set(static_cast<uint32_t>(Signal::Close));
-		m_view.lock->clear(std::memory_order_release);
+	while (m_view.lock->test_and_set(std::memory_order_acquire));
+	m_view.signals->set(static_cast<uint32_t>(Signal::Close));
+	m_view.lock->clear(std::memory_order_release);
 
-		while (*m_view.refCount > 1)
-		{
-			usleep(1000);
-		}
+	// First close any existing views
+	while (*m_view.refCount > 1)
+	{
+		usleep(1000);
 	}
 
 	// Now close the shared memory
