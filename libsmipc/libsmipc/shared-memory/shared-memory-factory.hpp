@@ -21,8 +21,8 @@
  * SOFTWARE.
  */
 
-#ifndef SHARED_MEMORY_FACTORY_H_
-#define SHARED_MEMORY_FACTORY_H_
+#ifndef SHARED_MEMORY_FACTORY_HPP_
+#define SHARED_MEMORY_FACTORY_HPP_
 
 #include <libsmipc/shared-memory/abstract-shared-memory.hpp>
 
@@ -31,4 +31,4 @@
 [[nodiscard]]
 std::unique_ptr<ISharedMemory> MakeUniqueSharedMemory();
 
-#endif  // SHARED_MEMORY_FACTORY_H_
+#endif  // SHARED_MEMORY_FACTORY_HPP_

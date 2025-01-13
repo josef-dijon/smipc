@@ -21,8 +21,8 @@
  * SOFTWARE.
  */
 
-#ifndef SHARED_MEMORY_VIEW_H_
-#define SHARED_MEMORY_VIEW_H_
+#ifndef SHARED_MEMORY_VIEW_HPP_
+#define SHARED_MEMORY_VIEW_HPP_
 
 #include <atomic>
 #include <cstdint>
@@ -48,4 +48,4 @@ constexpr std::size_t kSharedMemoryViewSignalsOffset {kSharedMemoryViewRefCountO
 constexpr std::size_t kSharedMemoryViewDataSizeOffset {kSharedMemoryViewSignalsOffset + sizeof(std::remove_pointer_t<decltype(SharedMemoryView::signals)>)};
 constexpr std::size_t kSharedMemoryViewDataOffset {kSharedMemoryViewDataSizeOffset + sizeof(std::remove_pointer_t<decltype(SharedMemoryView::dataSize)>)};
 
-#endif  // SHARED_MEMORY_VIEW_H_
+#endif  // SHARED_MEMORY_VIEW_HPP_
