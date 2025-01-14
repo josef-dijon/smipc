@@ -31,7 +31,7 @@ TEST(shared_memory_pipe, host_creation)
 {
 	constexpr std::size_t kSharedMemorySize {256u};
 	constexpr std::size_t bufferSize {kSharedMemorySize - kSharedMemoryViewDataOffset};
-	const auto hostPipe = CreateSharedMemoryPipe<kSharedMemorySize>("test-pipe");
+	const auto hostPipe = CreateSharedMemoryPipe("test-pipe", kSharedMemorySize);
 
 	const auto& rxPipe = hostPipe->getRxPipe();
 	const auto& txPipe = hostPipe->getTxPipe();
@@ -63,8 +63,8 @@ TEST(shared_memory_pipe, client_creation)
 {
 	constexpr std::size_t kSharedMemorySize {256u};
 	constexpr std::size_t bufferSize {kSharedMemorySize - kSharedMemoryViewDataOffset};
-	const auto hostPipe = CreateSharedMemoryPipe<kSharedMemorySize>("test-pipe");
-	const auto clientPipe = OpenSharedMemoryPipe<kSharedMemorySize>("test-pipe");
+	const auto hostPipe = CreateSharedMemoryPipe("test-pipe", kSharedMemorySize);
+	const auto clientPipe = OpenSharedMemoryPipe("test-pipe");
 
 	const auto& rxPipe = clientPipe->getRxPipe();
 	const auto& txPipe = clientPipe->getTxPipe();
@@ -95,8 +95,8 @@ TEST(shared_memory_pipe, client_creation)
 TEST(shared_memory_pipe, basic_rx_tx)
 {
 	constexpr std::size_t kSharedMemorySize {256u};
-	const auto hostPipe = CreateSharedMemoryPipe<kSharedMemorySize>("test-pipe");
-	const auto clientPipe = OpenSharedMemoryPipe<kSharedMemorySize>("test-pipe");
+	const auto hostPipe = CreateSharedMemoryPipe("test-pipe", kSharedMemorySize);
+	const auto clientPipe = OpenSharedMemoryPipe("test-pipe");
 
 	{
 		const auto& rxPipe = hostPipe->getRxPipe();
@@ -117,7 +117,7 @@ TEST(shared_memory_pipe, basic_rx_tx)
 	Packet packet {std::vector<uint8_t>({1u, 2u, 3u, 4u, 5u})};
 
 	hostPipe->write(packet);
-	EXPECT_EQ(clientPipe->getRxPipe().getRingBuffer()->getMessageCount(), 1u);
+	EXPECT_EQ(clientPipe->getRxPipe().getRingBuffer().getMessageCount(), 1u);
 	const auto rxPacket = clientPipe->read();
 	EXPECT_EQ(rxPacket.data.size(), packet.data.size());
 	EXPECT_EQ(rxPacket.data, packet.data);

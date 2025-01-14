@@ -1,17 +1,17 @@
 /* MIT License
- *
+ * 
  * Copyright (c) 2024 Josef de Joanelli (josef@pixelrift.io)
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,64 +21,47 @@
  * SOFTWARE.
  */
 
+#ifndef RX_SHARED_MEMORY_PIPE_H_
+#define RX_SHARED_MEMORY_PIPE_H_
+
+#include <libsmipc/shared-memory/abstract-shared-memory.hpp>
 #include <libsmipc/ring-buffer/rx-ring-buffer.hpp>
-#include <libsmipc/ring-buffer/tx-ring-buffer.hpp>
+#include <libsmipc/ring-buffer/packet.hpp>
 
-#include <benchmark/benchmark.h>
+#include <memory>
+#include <string>
+#include <cstdint>
 
-static void BM_push_pop_1(benchmark::State& state)
+class RxSharedMemoryPipe
 {
-	constexpr std::size_t kSize = 1024;
-	uint8_t buffer[kSize] {};
+public:
+	RxSharedMemoryPipe(std::unique_ptr<ISharedMemory>&& sharedMemory)
+		: m_sharedMemory {std::move(sharedMemory)}
+		, m_ringBuffer {reinterpret_cast<uint8_t*>(m_sharedMemory->getView().data), m_sharedMemory->getSize()}
+	{}
 
-	TxRingBuffer tx(buffer, kSize);
-	RxRingBuffer rx(buffer, kSize);
-
-	Packet packet {
-		std::vector<uint8_t> {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
-    };
-
-	for (auto _ : state)
+	~RxSharedMemoryPipe() 
 	{
-		tx.push(packet);
-		auto p1 = rx.pull();
-
-		benchmark::DoNotOptimize(p1);
+		m_sharedMemory->close();
 	}
-}
 
-static void BM_push_pop_4(benchmark::State& state)
-{
-	constexpr std::size_t kSize = 1024;
-	uint8_t buffer[kSize] {};
+	auto read() -> Packet {
+		return m_ringBuffer.pull();
+	}
 
-	TxRingBuffer tx(buffer, kSize);
-	RxRingBuffer rx(buffer, kSize);
-
-	Packet packet {
-		std::vector<uint8_t> {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
-    };
-
-	for (auto _ : state)
+	auto getSharedMemory() const -> const ISharedMemory*
 	{
-		tx.push(packet);
-		tx.push(packet);
-		tx.push(packet);
-		tx.push(packet);
-
-		auto p1 = rx.pull();
-		auto p2 = rx.pull();
-		auto p3 = rx.pull();
-		auto p4 = rx.pull();
-
-		benchmark::DoNotOptimize(p1);
-		benchmark::DoNotOptimize(p2);
-		benchmark::DoNotOptimize(p3);
-		benchmark::DoNotOptimize(p4);
+		return m_sharedMemory.get();
 	}
-}
 
-BENCHMARK(BM_push_pop_1);
-BENCHMARK(BM_push_pop_4);
+	auto getRingBuffer() const -> const RxRingBuffer&
+	{
+		return m_ringBuffer;
+	}
 
-BENCHMARK_MAIN();
+private:
+	std::unique_ptr<ISharedMemory> m_sharedMemory;
+	RxRingBuffer m_ringBuffer;
+};
+
+#endif  // RX_SHARED_MEMORY_PIPE_H_

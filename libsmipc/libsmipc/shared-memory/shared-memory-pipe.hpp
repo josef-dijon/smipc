@@ -26,71 +26,71 @@
 
 #include <libsmipc/ring-buffer/packet.hpp>
 #include <libsmipc/shared-memory/shared-memory-factory.hpp>
-#include <libsmipc/shared-memory/shared-memory-pipe-rx.hpp>
-#include <libsmipc/shared-memory/shared-memory-pipe-tx.hpp>
+#include <libsmipc/shared-memory/rx-shared-memory-pipe.hpp>
+#include <libsmipc/shared-memory/tx-shared-memory-pipe.hpp>
 
 #include <cstdint>
 #include <memory>
 #include <string>
 
-template <std::size_t NSize>
 class SharedMemoryPipe
 {
 public:
 	SharedMemoryPipe(std::unique_ptr<ISharedMemory>&& rxSharedMemory, std::unique_ptr<ISharedMemory>&& txSharedMemory)
-		: m_sharedMemoryPipeRx {std::move(rxSharedMemory)}
-		, m_sharedMemoryPipeTx {std::move(txSharedMemory)}
+		: m_rxSharedMemoryPipe {std::move(rxSharedMemory)}
+		, m_txSharedMemoryPipe {std::move(txSharedMemory)}
 	{}
+
 	~SharedMemoryPipe() = default;
 
-	auto getRxPipe() const -> const SharedMemoryPipeRx<NSize>&
+	auto getRxPipe() const -> const RxSharedMemoryPipe&
 	{
-		return m_sharedMemoryPipeRx;
+		return m_rxSharedMemoryPipe;
 	}
 
-	auto getTxPipe() const -> const SharedMemoryPipeTx<NSize>&
+	auto getTxPipe() const -> const TxSharedMemoryPipe&
 	{
-		return m_sharedMemoryPipeTx;
+		return m_txSharedMemoryPipe;
 	}
 
 	auto read() -> Packet
 	{
-		return m_sharedMemoryPipeRx.read();
+		return m_rxSharedMemoryPipe.read();
 	}
+
 	void write(Packet&& packet)
 	{
-		m_sharedMemoryPipeTx.write(std::move(packet));
+		m_txSharedMemoryPipe.write(std::move(packet));
 	}
+
 	void write(const Packet& packet)
 	{
-		m_sharedMemoryPipeTx.write(packet);
+		m_txSharedMemoryPipe.write(packet);
 	}
 
 private:
-	SharedMemoryPipeRx<NSize> m_sharedMemoryPipeRx;
-	SharedMemoryPipeTx<NSize> m_sharedMemoryPipeTx;
+	RxSharedMemoryPipe m_rxSharedMemoryPipe;
+	TxSharedMemoryPipe m_txSharedMemoryPipe;
 };
 
-template <std::size_t NSize>
-inline std::unique_ptr<SharedMemoryPipe<NSize>> CreateSharedMemoryPipe(const std::string& name)
+inline std::unique_ptr<SharedMemoryPipe> CreateSharedMemoryPipe(const std::string& name, std::size_t size)
 {
 	auto rxSharedMemory = MakeUniqueSharedMemory();
 	auto txSharedMemory = MakeUniqueSharedMemory();
-	rxSharedMemory->create("/smipc." + name + ".rx", NSize);
-	txSharedMemory->create("/smipc." + name + ".tx", NSize);
+	rxSharedMemory->create("/smipc." + name + ".rx", size);
+	txSharedMemory->create("/smipc." + name + ".tx", size);
 
-	return std::make_unique<SharedMemoryPipe<NSize>>(std::move(rxSharedMemory), std::move(txSharedMemory));
+	return std::make_unique<SharedMemoryPipe>(std::move(rxSharedMemory), std::move(txSharedMemory));
 }
 
-template <std::size_t NSize>
-inline std::unique_ptr<SharedMemoryPipe<NSize>> OpenSharedMemoryPipe(const std::string& name)
+inline std::unique_ptr<SharedMemoryPipe> OpenSharedMemoryPipe(const std::string& name)
 {
 	auto rxSharedMemory = MakeUniqueSharedMemory();
 	auto txSharedMemory = MakeUniqueSharedMemory();
 	rxSharedMemory->open("/smipc." + name + ".tx");
 	txSharedMemory->open("/smipc." + name + ".rx");
 
-	return std::make_unique<SharedMemoryPipe<NSize>>(std::move(rxSharedMemory), std::move(txSharedMemory));
+	return std::make_unique<SharedMemoryPipe>(std::move(rxSharedMemory), std::move(txSharedMemory));
 }
 
 #endif  // SHARED_MEMORY_PIPE_H_

@@ -21,8 +21,8 @@
  * SOFTWARE.
  */
 
-#include <libsmipc/ring-buffer/ring-buffer-rx.hpp>
-#include <libsmipc/ring-buffer/ring-buffer-tx.hpp>
+#include <libsmipc/ring-buffer/rx-ring-buffer.hpp>
+#include <libsmipc/ring-buffer/tx-ring-buffer.hpp>
 
 #include <gtest/gtest.h>
 
@@ -36,8 +36,8 @@ TEST(ring_buffer, basic_rx_tx)
 	constexpr std::size_t bufferSize {256u};
 
 	uint8_t buffer[bufferSize] {};
-	RingBufferTx<bufferSize> tx(buffer);
-	RingBufferRx<bufferSize> rx(buffer);
+	TxRingBuffer tx(buffer, bufferSize);
+	RxRingBuffer rx(buffer, bufferSize);
 
 	EXPECT_FALSE(tx.isFull());
 	EXPECT_EQ(rx.getMessageCount(), 0u);
@@ -64,7 +64,7 @@ TEST(ring_buffer, basic_tx_throw_on_overflow)
 	constexpr std::size_t bufferSize {128u};
 
 	uint8_t buffer[bufferSize] {};
-	RingBufferTx<bufferSize> tx(buffer);
+	TxRingBuffer tx(buffer, bufferSize);
 
 	Packet packet {std::vector<uint8_t>(129u)};
 
@@ -76,8 +76,8 @@ TEST(ring_buffer, basic_rx_tx_1)
 	constexpr std::size_t bufferSize {128u};
 
 	uint8_t buffer[bufferSize] {};
-	RingBufferTx<bufferSize> tx(buffer);
-	RingBufferRx<bufferSize> rx(buffer);
+	TxRingBuffer tx(buffer, bufferSize);
+	RxRingBuffer rx(buffer, bufferSize);
 
 	EXPECT_FALSE(tx.isFull());
 	EXPECT_EQ(rx.getMessageCount(), 0u);
@@ -129,8 +129,8 @@ TEST(ring_buffer, basic_rx_tx_3)
 	constexpr std::size_t bufferSize {128u};
 
 	uint8_t buffer[bufferSize] {};
-	RingBufferTx<bufferSize> tx(buffer);
-	RingBufferRx<bufferSize> rx(buffer);
+	TxRingBuffer tx(buffer, bufferSize);
+	RxRingBuffer rx(buffer, bufferSize);
 
 	EXPECT_FALSE(tx.isFull());
 	EXPECT_EQ(rx.getMessageCount(), 0u);
@@ -182,8 +182,8 @@ TEST(ring_buffer, basic_rx_tx_4)
 	constexpr std::size_t bufferSize {128u};
 
 	uint8_t buffer[bufferSize] {};
-	RingBufferTx<bufferSize> tx(buffer);
-	RingBufferRx<bufferSize> rx(buffer);
+	TxRingBuffer tx(buffer, bufferSize);
+	RxRingBuffer rx(buffer, bufferSize);
 
 	EXPECT_FALSE(tx.isFull());
 	EXPECT_EQ(rx.getMessageCount(), 0u);
@@ -235,8 +235,8 @@ TEST(ring_buffer, basic_rx_tx_5)
 	constexpr std::size_t bufferSize {128u};
 
 	uint8_t buffer[bufferSize] {};
-	RingBufferTx<bufferSize> tx(buffer);
-	RingBufferRx<bufferSize> rx(buffer);
+	TxRingBuffer tx(buffer, bufferSize);
+	RxRingBuffer rx(buffer, bufferSize);
 
 	EXPECT_FALSE(tx.isFull());
 	EXPECT_EQ(rx.getMessageCount(), 0u);
@@ -288,8 +288,8 @@ TEST(ring_buffer, basic_rx_tx_13)
 	constexpr std::size_t bufferSize {256u};
 
 	uint8_t buffer[bufferSize] {};
-	RingBufferTx<bufferSize> tx(buffer);
-	RingBufferRx<bufferSize> rx(buffer);
+	TxRingBuffer tx(buffer, bufferSize);
+	RxRingBuffer rx(buffer, bufferSize);
 
 	EXPECT_FALSE(tx.isFull());
 	EXPECT_EQ(rx.getMessageCount(), 0u);

@@ -21,48 +21,28 @@
  * SOFTWARE.
  */
 
-#ifndef SHARED_MEMORY_PIPE_TX_H_
-#define SHARED_MEMORY_PIPE_TX_H_
+#ifndef TX_RING_BUFFER_H_
+#define TX_RING_BUFFER_H_
 
-#include <libsmipc/shared-memory/abstract-shared-memory.hpp>
-#include <libsmipc/ring-buffer/ring-buffer-tx.hpp>
+#include <libsmipc/ring-buffer/dekkar-lock.hpp>
 #include <libsmipc/ring-buffer/packet.hpp>
+#include <libsmipc/ring-buffer/ring-buffer.hpp>
 
-#include <memory>
-#include <string>
 #include <cstdint>
 
-template <std::size_t NSize>
-class SharedMemoryPipeTx
+class TxRingBuffer: public RingBuffer
 {
 public:
-	SharedMemoryPipeTx(std::unique_ptr<ISharedMemory>&& sharedMemory)
-		: m_sharedMemory {std::move(sharedMemory)}
-		, m_ringBuffer {reinterpret_cast<uint8_t*>(m_sharedMemory->getView().data)}
-	{}
+	TxRingBuffer(uint8_t* memory, std::size_t size);
+	~TxRingBuffer() = default;
 
-	~SharedMemoryPipeTx()
-	{
-		m_sharedMemory->close();
-	}
+	[[nodiscard]]
+	auto isFull() const noexcept -> bool;
 
-	void write(const Packet& packet) {
-		m_ringBuffer.push(packet);
-	}
-
-	auto getSharedMemory() const -> const ISharedMemory*
-	{
-		return m_sharedMemory.get();
-	}
-
-	auto getRingBuffer() const -> const RingBufferTx<NSize>*
-	{
-		return &m_ringBuffer;
-	}
+	void push(const Packet& packet);
 
 private:
-	std::unique_ptr<ISharedMemory> m_sharedMemory;
-	RingBufferTx<NSize> m_ringBuffer;
+	mutable DekkarLock m_lock {header->txWaiting, header->rxWaiting, header->turn};
 };
 
-#endif  // SHARED_MEMORY_PIPE_TX_H_
+#endif  // TX_RING_BUFFER_H_
